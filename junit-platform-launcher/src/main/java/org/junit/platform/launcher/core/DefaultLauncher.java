@@ -10,7 +10,13 @@
 
 package org.junit.platform.launcher.core;
 
+import static java.util.stream.Collectors.toList;
+import static org.junit.platform.engine.TestExecutionResult.successful;
+import static org.junit.platform.launcher.core.RootedDiscoveryResult.collectRoots;
+
+import java.util.ArrayList;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Optional;
 import java.util.Set;
 
@@ -79,7 +85,7 @@ class DefaultLauncher implements Launcher {
 	@Override
 	public TestPlan discover(LauncherDiscoveryRequest discoveryRequest) {
 		Preconditions.notNull(discoveryRequest, "LauncherDiscoveryRequest must not be null");
-		return TestPlan.from(discoverRoot(discoveryRequest, "discovery").getEngineDescriptors());
+		return TestPlan.from(collectRoots(discover(discoveryRequest, "discovery")));
 	}
 
 	@Override
@@ -87,19 +93,35 @@ class DefaultLauncher implements Launcher {
 		Preconditions.notNull(discoveryRequest, "LauncherDiscoveryRequest must not be null");
 		Preconditions.notNull(listeners, "TestExecutionListener array must not be null");
 		Preconditions.containsNoNullElements(listeners, "individual listeners must not be null");
-		execute(discoverRoot(discoveryRequest, "execution"), discoveryRequest.getConfigurationParameters(), listeners);
+		execute(discover(discoveryRequest, "execution"), discoveryRequest.getConfigurationParameters(), listeners);
 	}
 
 	TestExecutionListenerRegistry getTestExecutionListenerRegistry() {
 		return listenerRegistry;
 	}
 
-	private Root discoverRoot(LauncherDiscoveryRequest discoveryRequest, String phase) {
-		Root root = new Root();
+	private List<RootedDiscoveryResult> discover(LauncherDiscoveryRequest discoveryRequest, String phase) {
+		// @formatter:off
+		return collectRequests(discoveryRequest).stream()
+				.map(request -> resolveRequest(phase, request))
+				.collect(toList());
+		// @formatter:on
+		// TODO prune more aggressively when a suite is present
+		// TODO -> also remove empty engine descriptors from non-suite request
+	}
 
+	private List<RootedDiscoveryRequest> collectRequests(LauncherDiscoveryRequest discoveryRequest) {
+		List<RootedDiscoveryRequest> requests = new ArrayList<>();
+		requests.add(new RootedDiscoveryRequest(discoveryRequest));
+		requests.addAll(new SuiteDiscoverer().resolve(discoveryRequest));
+		return requests;
+	}
+
+	private RootedDiscoveryResult resolveRequest(String phase, RootedDiscoveryRequest request) {
+		RootedDiscoveryResult result = new RootedDiscoveryResult(request);
 		for (TestEngine testEngine : this.testEngines) {
 			// @formatter:off
-			boolean engineIsExcluded = discoveryRequest.getEngineFilters().stream()
+			boolean engineIsExcluded = request.getDiscoveryRequest().getEngineFilters().stream()
 					.map(engineFilter -> engineFilter.apply(testEngine))
 					.anyMatch(FilterResult::excluded);
 			// @formatter:on
@@ -114,20 +136,21 @@ class DefaultLauncher implements Launcher {
 			logger.debug(() -> String.format("Discovering tests during Launcher %s phase in engine '%s'.", phase,
 				testEngine.getId()));
 
-			Optional<TestDescriptor> engineRoot = discoverEngineRoot(testEngine, discoveryRequest);
-			engineRoot.ifPresent(rootDescriptor -> root.add(testEngine, rootDescriptor));
+			Optional<TestDescriptor> engineRoot = discoverEngineRoot(testEngine, request);
+			engineRoot.ifPresent(rootDescriptor -> result.add(testEngine, rootDescriptor));
 		}
-		root.applyPostDiscoveryFilters(discoveryRequest);
-		root.prune();
-		return root;
+		result.applyPostDiscoveryFilters();
+		result.prune();
+		return result;
 	}
 
-	private Optional<TestDescriptor> discoverEngineRoot(TestEngine testEngine,
-			LauncherDiscoveryRequest discoveryRequest) {
+	private Optional<TestDescriptor> discoverEngineRoot(TestEngine testEngine, RootedDiscoveryRequest request) {
 
-		UniqueId uniqueEngineId = UniqueId.forEngine(testEngine.getId());
+		UniqueId uniqueEngineId = request.getSuiteDescriptor().map(TestDescriptor::getUniqueId).map(
+			id -> id.append(UniqueId.ENGINE_SEGMENT_TYPE, testEngine.getId())).orElseGet(
+				() -> UniqueId.forEngine(testEngine.getId()));
 		try {
-			TestDescriptor engineRoot = testEngine.discover(discoveryRequest, uniqueEngineId);
+			TestDescriptor engineRoot = testEngine.discover(request.getDiscoveryRequest(), uniqueEngineId);
 			Preconditions.notNull(engineRoot,
 				() -> String.format(
 					"The discover() method for TestEngine with ID '%s' must return a non-null root TestDescriptor.",
@@ -140,18 +163,24 @@ class DefaultLauncher implements Launcher {
 		}
 	}
 
-	private void execute(Root root, ConfigurationParameters configurationParameters,
+	private void execute(List<RootedDiscoveryResult> results, ConfigurationParameters configurationParameters,
 			TestExecutionListener... listeners) {
 
 		TestExecutionListenerRegistry listenerRegistry = buildListenerRegistryForExecution(listeners);
-		TestPlan testPlan = TestPlan.from(root.getEngineDescriptors());
+		TestPlan testPlan = TestPlan.from(collectRoots(results));
 		TestExecutionListener testExecutionListener = listenerRegistry.getCompositeTestExecutionListener();
 		testExecutionListener.testPlanExecutionStarted(testPlan);
 		ExecutionListenerAdapter engineExecutionListener = new ExecutionListenerAdapter(testPlan,
 			testExecutionListener);
-		for (TestEngine testEngine : root.getTestEngines()) {
-			TestDescriptor testDescriptor = root.getTestDescriptorFor(testEngine);
-			execute(testEngine, new ExecutionRequest(testDescriptor, engineExecutionListener, configurationParameters));
+		for (RootedDiscoveryResult result : results) {
+			result.getSuiteIdentifier().ifPresent(testExecutionListener::executionStarted);
+			for (TestEngine testEngine : result.getTestEngines()) {
+				TestDescriptor testDescriptor = result.getTestDescriptorFor(testEngine);
+				execute(testEngine,
+					new ExecutionRequest(testDescriptor, engineExecutionListener, configurationParameters));
+			}
+			result.getSuiteIdentifier().ifPresent(
+				suiteIdentifier -> testExecutionListener.executionFinished(suiteIdentifier, successful()));
 		}
 		testExecutionListener.testPlanExecutionFinished(testPlan);
 	}
