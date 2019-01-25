@@ -206,7 +206,7 @@ public class ExtensionRegistry {
 	 *
 	 * @param extensionType the type of extension to register
 	 */
-	void registerExtension(Class<? extends Extension> extensionType) {
+	public void registerExtension(Class<? extends Extension> extensionType) {
 		if (!isAlreadyRegistered(extensionType)) {
 			registerExtension(ReflectionUtils.newInstance(extensionType));
 			this.registeredExtensionTypes.add(extensionType);
@@ -249,6 +249,7 @@ public class ExtensionRegistry {
 		logger.trace(() -> String.format("Registering extension [%s] from source [%s].", extension, source));
 
 		this.registeredExtensions.add(extension);
+		this.registeredExtensionTypes.add(extension.getClass());
 	}
 
 }

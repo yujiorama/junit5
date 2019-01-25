@@ -10,16 +10,19 @@
 
 package org.junit.jupiter.engine.descriptor;
 
-import static java.util.stream.Collectors.toList;
 import static org.junit.platform.commons.util.AnnotationUtils.findAnnotatedFields;
 import static org.junit.platform.commons.util.AnnotationUtils.findAnnotation;
 import static org.junit.platform.commons.util.AnnotationUtils.findRepeatableAnnotations;
+import static org.junit.platform.commons.util.ReflectionUtils.HierarchyTraversalMode.TOP_DOWN;
+import static org.junit.platform.commons.util.ReflectionUtils.findFields;
+import static org.junit.platform.commons.util.ReflectionUtils.findMethods;
 import static org.junit.platform.commons.util.ReflectionUtils.isPrivate;
 import static org.junit.platform.commons.util.ReflectionUtils.isStatic;
 import static org.junit.platform.commons.util.ReflectionUtils.tryToReadFieldValue;
 
 import java.lang.reflect.AnnotatedElement;
 import java.lang.reflect.Field;
+import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Comparator;
@@ -32,6 +35,7 @@ import org.junit.jupiter.api.extension.Extension;
 import org.junit.jupiter.api.extension.RegisterExtension;
 import org.junit.jupiter.engine.extension.ExtensionRegistry;
 import org.junit.platform.commons.util.Preconditions;
+import org.junit.platform.commons.util.ReflectionUtils;
 
 /**
  * Collection of utilities for working with extensions and the extension registry.
@@ -68,12 +72,41 @@ final class ExtensionUtils {
 		Preconditions.notNull(annotatedElement, "AnnotatedElement must not be null");
 		Preconditions.notNull(parentRegistry, "Parent ExtensionRegistry must not be null");
 
+		final List<Class<? extends Extension>> extensionTypes = new ArrayList<>();
+
 		// @formatter:off
-		List<Class<? extends Extension>> extensionTypes = findRepeatableAnnotations(annotatedElement, ExtendWith.class).stream()
+		findRepeatableAnnotations(annotatedElement, ExtendWith.class).stream()
 				.map(ExtendWith::value)
 				.flatMap(Arrays::stream)
-				.collect(toList());
+				.forEach(extensionTypes::add);
 		// @formatter:on
+
+		/*
+		if (annotatedElement instanceof Class) {
+			Class<?> clazz = (Class<?>) annotatedElement;
+			// @formatter:off
+			findFields(clazz, f -> true, TOP_DOWN).stream()
+				.forEach(field -> {
+						findRepeatableAnnotations(field, ExtendWith.class).stream()
+							.map(ExtendWith::value)
+							.flatMap(Arrays::stream)
+							.forEach(extensionTypes::add);
+			});
+			// @formatter:on
+
+			// @formatter:off
+			findMethods(clazz, m -> true).stream()
+				.map(Method::getParameters)
+				.flatMap(Arrays::stream)
+				.forEach(parameter -> {
+						findRepeatableAnnotations(parameter, ExtendWith.class).stream()
+							.map(ExtendWith::value)
+							.flatMap(Arrays::stream)
+							.forEach(extensionTypes::add);
+			});
+			// @formatter:on
+		}
+		*/
 
 		return ExtensionRegistry.createRegistryFrom(parentRegistry, extensionTypes);
 	}
@@ -111,6 +144,35 @@ final class ExtensionUtils {
 				registry.registerExtension(extension, field);
 			});
 		});
+
+		final List<Class<? extends Extension>> extensionTypes = new ArrayList<>();
+		Predicate<Field> fieldIsStatic = (instance == null) ? ReflectionUtils::isStatic : ReflectionUtils::isNotStatic;
+		Predicate<Method> methodIsStatic = (instance == null) ? ReflectionUtils::isStatic
+				: ReflectionUtils::isNotStatic;
+
+		// @formatter:off
+		findFields(clazz, fieldIsStatic, TOP_DOWN).stream()
+			.forEach(field -> {
+					findRepeatableAnnotations(field, ExtendWith.class).stream()
+						.map(ExtendWith::value)
+						.flatMap(Arrays::stream)
+						.forEach(extensionTypes::add);
+		});
+		// @formatter:on
+
+		// @formatter:off
+		findMethods(clazz, methodIsStatic).stream()
+			.map(Method::getParameters)
+			.flatMap(Arrays::stream)
+			.forEach(parameter -> {
+					findRepeatableAnnotations(parameter, ExtendWith.class).stream()
+						.map(ExtendWith::value)
+						.flatMap(Arrays::stream)
+						.forEach(extensionTypes::add);
+		});
+		// @formatter:on
+
+		extensionTypes.forEach(registry::registerExtension);
 	}
 
 	/**

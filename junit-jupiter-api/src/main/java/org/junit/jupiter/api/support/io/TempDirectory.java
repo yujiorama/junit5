@@ -44,6 +44,7 @@ import java.util.function.Predicate;
 import org.apiguardian.api.API;
 import org.junit.jupiter.api.extension.BeforeAllCallback;
 import org.junit.jupiter.api.extension.BeforeEachCallback;
+import org.junit.jupiter.api.extension.ExtendWith;
 import org.junit.jupiter.api.extension.ExtensionConfigurationException;
 import org.junit.jupiter.api.extension.ExtensionContext;
 import org.junit.jupiter.api.extension.ExtensionContext.Namespace;
@@ -114,6 +115,7 @@ public final class TempDirectory implements BeforeAllCallback, BeforeEachCallbac
 	@Target({ ElementType.FIELD, ElementType.PARAMETER })
 	@Retention(RetentionPolicy.RUNTIME)
 	@Documented
+	@ExtendWith(TempDirectory.class)
 	public @interface TempDir {
 	}
 

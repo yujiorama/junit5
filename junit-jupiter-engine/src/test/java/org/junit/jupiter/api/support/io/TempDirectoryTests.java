@@ -372,6 +372,38 @@ class TempDirectoryTests extends AbstractJupiterTestEngineTests {
 
 	}
 
+	@Nested
+	@DisplayName("resolves temp dir when extension is implicitly registered via @TempDir")
+	@TestMethodOrder(OrderAnnotation.class)
+	class ImplicitExtensionRegistration {
+
+		@Test
+		@DisplayName("on a static field")
+		@Order(1)
+		void resolvesTempDirWithTempDirectoryRegistrationViaStaticField() {
+			executeTestsForClass(TempDirectoryRegistrationViaStaticFieldTestCase.class).tests()//
+					.assertStatistics(stats -> stats.started(1).succeeded(1));
+
+		}
+
+		@Test
+		@DisplayName("on an instance field")
+		@Order(2)
+		void resolvesTempDirWithTempDirectoryRegistrationViaInstanceField() {
+			executeTestsForClass(TempDirectoryRegistrationViaInstanceFieldTestCase.class).tests()//
+					.assertStatistics(stats -> stats.started(1).succeeded(1));
+		}
+
+		@Test
+		@DisplayName("on a @Test method parameter")
+		@Order(3)
+		void resolvesTempDirWithTempDirectoryRegistrationViaTestMethodParameter() {
+			executeTestsForClass(TempDirectoryRegistrationViaParameterTestCase.class).tests()//
+					.assertStatistics(stats -> stats.started(1).succeeded(1));
+		}
+
+	}
+
 	private static void assertSingleFailedContainer(EngineExecutionResults results, Class<? extends Throwable> clazz,
 			String message) {
 
@@ -976,6 +1008,45 @@ class TempDirectoryTests extends AbstractJupiterTestEngineTests {
 
 		@Test
 		void test() {
+		}
+
+	}
+
+	// @ExtendWith(TempDirectory.class)
+	static class TempDirectoryRegistrationViaStaticFieldTestCase {
+
+		@TempDir
+		static Path tempDir;
+
+		@Test
+		void test() {
+			assertNotNull(tempDir);
+			assertTrue(Files.exists(tempDir));
+		}
+
+	}
+
+	// @ExtendWith(TempDirectory.class)
+	static class TempDirectoryRegistrationViaInstanceFieldTestCase {
+
+		@TempDir
+		Path tempDir;
+
+		@Test
+		void test() {
+			assertNotNull(tempDir);
+			assertTrue(Files.exists(tempDir));
+		}
+
+	}
+
+	// @ExtendWith(TempDirectory.class)
+	static class TempDirectoryRegistrationViaParameterTestCase {
+
+		@Test
+		void test(@TempDir Path tempDir) {
+			assertNotNull(tempDir);
+			assertTrue(Files.exists(tempDir));
 		}
 
 	}
