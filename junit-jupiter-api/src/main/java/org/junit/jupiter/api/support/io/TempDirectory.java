@@ -42,6 +42,7 @@ import java.util.concurrent.Callable;
 import java.util.function.Predicate;
 
 import org.apiguardian.api.API;
+import org.junit.jupiter.api.TestInstance.Lifecycle;
 import org.junit.jupiter.api.extension.BeforeAllCallback;
 import org.junit.jupiter.api.extension.BeforeEachCallback;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -397,11 +398,21 @@ public final class TempDirectory implements BeforeAllCallback, BeforeEachCallbac
 	@Override
 	public boolean supportsParameter(ParameterContext parameterContext, ExtensionContext extensionContext) {
 		boolean annotated = parameterContext.isAnnotated(TempDir.class);
-		if (annotated && parameterContext.getDeclaringExecutable() instanceof Constructor) {
-			throw new ParameterResolutionException(
-				"@TempDir is not supported on constructor parameters. Please use field injection instead.");
+		if (!annotated) {
+			return false;
 		}
-		return annotated;
+
+		boolean inConstructor = parameterContext.getDeclaringExecutable() instanceof Constructor;
+		boolean testInstancePerMethod = extensionContext.getTestInstanceLifecycle().filter(
+			Lifecycle.PER_METHOD::equals).isPresent();
+
+		if (inConstructor && testInstancePerMethod) {
+			throw new ParameterResolutionException(
+				"@TempDir is not supported on constructor parameters when using @TestInstance(PER_METHOD) semantics. "
+						+ "Please use field injection instead.");
+		}
+
+		return true;
 	}
 
 	/**
