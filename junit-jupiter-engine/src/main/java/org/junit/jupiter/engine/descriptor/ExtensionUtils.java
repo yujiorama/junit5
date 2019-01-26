@@ -16,6 +16,7 @@ import static org.junit.platform.commons.util.AnnotationUtils.findRepeatableAnno
 import static org.junit.platform.commons.util.ReflectionUtils.HierarchyTraversalMode.TOP_DOWN;
 import static org.junit.platform.commons.util.ReflectionUtils.findFields;
 import static org.junit.platform.commons.util.ReflectionUtils.findMethods;
+import static org.junit.platform.commons.util.ReflectionUtils.getDeclaredConstructor;
 import static org.junit.platform.commons.util.ReflectionUtils.isPrivate;
 import static org.junit.platform.commons.util.ReflectionUtils.isStatic;
 import static org.junit.platform.commons.util.ReflectionUtils.tryToReadFieldValue;
@@ -25,6 +26,7 @@ import java.lang.reflect.Field;
 import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collection;
 import java.util.Comparator;
 import java.util.List;
 import java.util.function.Predicate;
@@ -173,6 +175,20 @@ final class ExtensionUtils {
 		// @formatter:on
 
 		extensionTypes.forEach(registry::registerExtension);
+	}
+
+	static void registerExtensionsFromConstructorParameters(ExtensionRegistry registry, Class<?> clazz) {
+		Preconditions.notNull(registry, "ExtensionRegistry must not be null");
+		Preconditions.notNull(clazz, "Class must not be null");
+
+		// @formatter:off
+		Arrays.stream(getDeclaredConstructor(clazz).getParameters())
+				.map(parameter -> findRepeatableAnnotations(parameter, ExtendWith.class))
+				.flatMap(Collection::stream)
+				.map(ExtendWith::value)
+				.flatMap(Arrays::stream)
+				.forEach(registry::registerExtension);
+		// @formatter:on
 	}
 
 	/**

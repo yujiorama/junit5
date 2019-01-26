@@ -14,6 +14,7 @@ import static java.util.stream.Collectors.joining;
 import static org.apiguardian.api.API.Status.INTERNAL;
 import static org.junit.jupiter.engine.descriptor.DisplayNameUtils.createDisplayNameSupplierForClass;
 import static org.junit.jupiter.engine.descriptor.ExtensionUtils.populateNewExtensionRegistryFromExtendWithAnnotation;
+import static org.junit.jupiter.engine.descriptor.ExtensionUtils.registerExtensionsFromConstructorParameters;
 import static org.junit.jupiter.engine.descriptor.ExtensionUtils.registerExtensionsFromFields;
 import static org.junit.jupiter.engine.descriptor.LifecycleMethodUtils.findAfterAllMethods;
 import static org.junit.jupiter.engine.descriptor.LifecycleMethodUtils.findAfterEachMethods;
@@ -265,6 +266,8 @@ public class ClassTestDescriptor extends JupiterTestDescriptor {
 
 	private TestInstances instantiateAndPostProcessTestInstance(JupiterEngineExecutionContext parentExecutionContext,
 			ExtensionContext extensionContext, ExtensionRegistry registry) {
+
+		registerExtensionsFromConstructorParameters(registry, this.testClass);
 
 		TestInstances instances = instantiateTestClass(parentExecutionContext, registry, extensionContext);
 		invokeTestInstancePostProcessors(instances.getInnermostInstance(), registry, extensionContext);

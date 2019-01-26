@@ -138,6 +138,14 @@ class TempDirectoryTests extends AbstractJupiterTestEngineTests {
 				AnnotationOnBeforeAllMethodParameterWithTestInstancePerClassTestCase.class);
 		}
 
+		@Test
+		@DisplayName("when @TempDir is used on constructor parameter with @TestInstance(PER_CLASS)")
+		@Order(25)
+		void resolvesSharedTempDirWhenAnnotationIsUsedOnConstructorParameterWithTestInstancePerClass() {
+			assertSharedTempDirForParameterInjection(
+				AnnotationOnConstructorParameterWithTestInstancePerClassTestCase.class);
+		}
+
 		private void assertSharedTempDirForFieldInjection(
 				Class<? extends BaseSharedTempDirFieldInjectionTestCase> testClass) {
 
@@ -357,17 +365,7 @@ class TempDirectoryTests extends AbstractJupiterTestEngineTests {
 			var results = executeTestsForClass(AnnotationOnConstructorParameterTestCase.class);
 
 			assertSingleFailedTest(results, ParameterResolutionException.class,
-				"@TempDir is not supported on constructor parameters. Please use field injection instead.");
-		}
-
-		@Test
-		@DisplayName("when @TempDir is used on constructor parameter with @TestInstance(PER_CLASS)")
-		@Order(9)
-		void resolvesSharedTempDirWhenAnnotationIsUsedOnConstructorParameterWithTestInstancePerClass() {
-			var results = executeTestsForClass(AnnotationOnConstructorParameterWithTestInstancePerClassTestCase.class);
-
-			assertSingleFailedContainer(results, ParameterResolutionException.class,
-				"@TempDir is not supported on constructor parameters. Please use field injection instead.");
+				"@TempDir is not supported on constructor parameters when using @TestInstance(PER_METHOD) semantics. Please use field injection instead.");
 		}
 
 	}
@@ -395,8 +393,16 @@ class TempDirectoryTests extends AbstractJupiterTestEngineTests {
 		}
 
 		@Test
-		@DisplayName("on a @Test method parameter")
+		@DisplayName("on a constructor parameter")
 		@Order(3)
+		void resolvesTempDirWithTempDirectoryRegistrationViaConstructorParameter() {
+			executeTestsForClass(TempDirectoryRegistrationViaConstructorParameterTestCase.class).tests()//
+					.assertStatistics(stats -> stats.started(1).succeeded(1));
+		}
+
+		@Test
+		@DisplayName("on a @Test method parameter")
+		@Order(4)
 		void resolvesTempDirWithTempDirectoryRegistrationViaTestMethodParameter() {
 			executeTestsForClass(TempDirectoryRegistrationViaParameterTestCase.class).tests()//
 					.assertStatistics(stats -> stats.started(1).succeeded(1));
@@ -628,10 +634,12 @@ class TempDirectoryTests extends AbstractJupiterTestEngineTests {
 
 	@TestInstance(PER_CLASS)
 	static class AnnotationOnConstructorParameterWithTestInstancePerClassTestCase
-			extends AnnotationOnConstructorParameterTestCase {
+			extends BaseSharedTempDirParameterInjectionTestCase {
 
 		AnnotationOnConstructorParameterWithTestInstancePerClassTestCase(@TempDir Path tempDir) {
-			super(tempDir);
+			assertThat(BaseSharedTempDirParameterInjectionTestCase.tempDir).isNull();
+			BaseSharedTempDirParameterInjectionTestCase.tempDir = tempDir;
+			check(tempDir);
 		}
 	}
 
@@ -1045,6 +1053,26 @@ class TempDirectoryTests extends AbstractJupiterTestEngineTests {
 
 		@Test
 		void test(@TempDir Path tempDir) {
+			assertNotNull(tempDir);
+			assertTrue(Files.exists(tempDir));
+		}
+
+	}
+
+	// @ExtendWith(TempDirectory.class)
+	@TestInstance(PER_CLASS)
+	static class TempDirectoryRegistrationViaConstructorParameterTestCase {
+
+		private final Path tempDir;
+
+		TempDirectoryRegistrationViaConstructorParameterTestCase(@TempDir Path tempDir) {
+			this.tempDir = tempDir;
+			assertNotNull(tempDir);
+			assertTrue(Files.exists(tempDir));
+		}
+
+		@Test
+		void test() {
 			assertNotNull(tempDir);
 			assertTrue(Files.exists(tempDir));
 		}
