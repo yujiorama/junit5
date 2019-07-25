@@ -191,7 +191,7 @@ tasks.compileTestJava {
 }
 
 class ModulePathArgumentProvider : CommandLineArgumentProvider {
-	@get:Input val modulePath: Provider<Configuration> = configurations.compileClasspath
+	@get:Input val modulePath: Provider<out FileCollection> = configurations.compileClasspath
 	override fun asArguments(): List<String> = listOf("--module-path", modulePath.get().asPath)
 }
 
