@@ -1,5 +1,3 @@
-import java.util.spi.ToolProvider
-
 plugins {
 	`java-library-conventions`
 }
@@ -35,12 +33,12 @@ tasks {
 
 	jar {
 		dependsOn(compileMainRelease9Java)
-		doLast {
-			ToolProvider.findFirst("jar").get().run(System.out, System.err, "--update",
-					"--file", archiveFile.get().asFile.absolutePath,
-					"--release", "9",
-					"-C", mainRelease9.output.classesDirs.singleFile.absolutePath, ".")
-		}
+//		doLast {
+//			ToolProvider.findFirst("jar").get().run(System.out, System.err, "--update",
+//					"--file", archiveFile.get().asFile.absolutePath,
+//					"--release", "9",
+//					"-C", mainRelease9.output.classesDirs.singleFile.absolutePath, ".")
+//		}
 	}
 
 	named<Checkstyle>("checkstyleMainRelease9").configure {
