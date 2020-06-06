@@ -46,6 +46,15 @@ asciidoctorj {
 	}
 }
 
+pdfThemes {
+	github("default-with-fallback-font") {
+		setOrganisation("asciidoctor")
+		setRepository("asciidoctor-pdf")
+		relativePath = "data/themes"
+		setTag("v1.5.3")
+	}
+}
+
 val snapshot = rootProject.version.toString().contains("SNAPSHOT")
 val docsVersion = if (snapshot) "snapshot" else rootProject.version
 val releaseBranch = if (snapshot) "master" else "r${rootProject.version}"
@@ -205,6 +214,7 @@ tasks {
 		}
 		copyAllResources()
 		attributes(mapOf("releaseNotesUrl" to "https://junit.org/junit5/docs/$docsVersion/release-notes/"))
+		setTheme("default-with-fallback-font")
 	}
 
 	val downloadJavadocElementLists by registering {
