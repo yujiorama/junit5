@@ -1,0 +1,24 @@
+name: Performance Experiment
+
+on:
+  push:
+    branches:
+      - 'marc/*'
+
+jobs:
+  linux:
+    runs-on: ubuntu-latest
+    container: ghcr.io/junit-team/build
+    strategy:
+      fail-fast: false
+      matrix:
+        build-cache-flag: ['--build-cache', '--no-build-cache']
+        parallel-flag: ['--parallel', '--no-parallel']
+    steps:
+    - uses: actions/checkout@v2
+      with:
+        # Codecov needs fetch-depth > 1
+        fetch-depth: 2
+    - name: Test and Coverage
+      run: |
+        ./gradlew ${{ matrix.build-cache-flag }} ${{ matrix.parallel-flag }} -Dplatform.tooling.support.tests.enabled=true build
