@@ -116,6 +116,7 @@ tasks {
 		doFirst {
 			val output = ByteArrayOutputStream()
 			val result = javaexec {
+				debug = project.findProperty("debug") == "true"
 				classpath = runtimeClasspath
 				main = "org.junit.platform.console.ConsoleLauncher"
 				args("--scan-classpath")

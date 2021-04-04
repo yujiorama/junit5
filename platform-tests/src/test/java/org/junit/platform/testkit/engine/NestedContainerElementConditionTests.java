@@ -33,13 +33,13 @@ import org.junit.jupiter.api.Test;
 import org.junit.platform.commons.PreconditionViolationException;
 import org.junit.platform.engine.TestDescriptor;
 import org.junit.platform.engine.UniqueId;
-import org.junit.platform.testkit.engine.NestedContainerEventConditionTests.ATestCase.BTestCase;
-import org.junit.platform.testkit.engine.NestedContainerEventConditionTests.ATestCase.BTestCase.CTestCase;
+import org.junit.platform.testkit.engine.NestedContainerElementConditionTests.ATestCase.BTestCase;
+import org.junit.platform.testkit.engine.NestedContainerElementConditionTests.ATestCase.BTestCase.CTestCase;
 
 /**
  * @since 1.6
  */
-class NestedContainerEventConditionTests {
+class NestedContainerElementConditionTests {
 
 	@Test
 	void preconditions() {
@@ -48,8 +48,8 @@ class NestedContainerEventConditionTests {
 				.withMessage("Class must not be null");
 
 		assertThatExceptionOfType(PreconditionViolationException.class)//
-				.isThrownBy(() -> nestedContainer(NestedContainerEventConditionTests.class))//
-				.withMessage(NestedContainerEventConditionTests.class.getName() + " must be a nested class");
+				.isThrownBy(() -> nestedContainer(NestedContainerElementConditionTests.class))//
+				.withMessage(NestedContainerElementConditionTests.class.getName() + " must be a nested class");
 	}
 
 	@Test
@@ -94,7 +94,7 @@ class NestedContainerEventConditionTests {
 		assertDoesNotThrow(() -> container(ATestCase.BTestCase.CTestCase.class));
 		assertDoesNotThrow(() -> nestedContainer(ATestCase.BTestCase.CTestCase.class));
 
-		assertDoesNotThrow(() -> container(NestedContainerEventConditionTests.class));
+		assertDoesNotThrow(() -> container(NestedContainerElementConditionTests.class));
 	}
 
 	@Test
