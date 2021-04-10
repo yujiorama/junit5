@@ -112,7 +112,7 @@ tasks {
 		inputs.files(runtimeClasspath).withNormalizer(ClasspathNormalizer::class)
 		val reportsDir = file("$buildDir/test-results")
 		outputs.dir(reportsDir)
-		outputs.cacheIf { true }
+		outputs.cacheIf { project.findProperty("debug") != "true" }
 		doFirst {
 			val output = ByteArrayOutputStream()
 			val result = javaexec {
