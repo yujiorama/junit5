@@ -19,6 +19,7 @@ import java.io.PrintWriter;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 
+import org.junit.jupiter.api.Tag;
 import org.junit.platform.engine.FilterResult;
 import org.junit.platform.engine.TestDescriptor;
 import org.junit.platform.launcher.Launcher;
@@ -66,6 +67,7 @@ class UsingTheLauncherDemo {
 		// @formatter:on
 	}
 
+	@org.junit.jupiter.api.Tag("exclude")
 	@org.junit.jupiter.api.Test
 	@SuppressWarnings("unused")
 	void execution() {
