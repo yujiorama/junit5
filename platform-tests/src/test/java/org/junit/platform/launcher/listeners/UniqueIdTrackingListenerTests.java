@@ -65,7 +65,7 @@ import org.opentest4j.TestAbortedException;
  *
  * @since 1.8
  */
-class UniqueIdTrackingListenerIntegrationTests {
+class UniqueIdTrackingListenerTests {
 
 	private static final String passingTest = "[engine:junit-jupiter]/[class:org.junit.platform.launcher.listeners.UniqueIdTrackingListenerIntegrationTests$TestCase1]/[method:passingTest()]";
 	private static final String skippedTest = "[engine:junit-jupiter]/[class:org.junit.platform.launcher.listeners.UniqueIdTrackingListenerIntegrationTests$TestCase1]/[method:skippedTest()]";
