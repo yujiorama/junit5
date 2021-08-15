@@ -1,5 +1,6 @@
 [versions]
 apiguardian = "1.1.2"
+asciidoctor-plugins = "3.3.2" # Check if workaround in documentation.gradle.kts can be removed when upgrading
 asciidoctor-pdf = "1.5.3"
 assertj = "3.20.2"
 checkstyle = "8.36.2"
@@ -12,6 +13,21 @@ ktlint = "0.35.0"
 log4j = "2.14.1"
 opentest4j = "1.2.0"
 surefire = "2.22.2"
+
+[plugins]
+gradle-enterprise = { id = "com.gradle.enterprise", version = "3.6.3" }
+test-distribution = { id = "com.gradle.enterprise.test-distribution", version = "2.1.1" }
+common-custom-user-data = { id = "com.gradle.common-custom-user-data-gradle-plugin", version = "1.4.2" }
+versioning = { id = "net.nemerosa.versioning", version = "2.14.0" }
+versions = { id = "com.github.ben-manes.versions", version = "0.39.0" }
+spotless = { id = "com.diffplug.spotless", version = "5.14.2" }
+git-publish = { id = "org.ajoberstar.git-publish", version = "3.0.0" }
+kotlin = { id = "org.jetbrains.kotlin.jvm", version = "1.5.21" }
+asciidoctor-convert = { id = "org.asciidoctor.jvm.convert", version.ref = "asciidoctor-plugins" }
+asciidoctor-pdf = { id = "org.asciidoctor.jvm.pdf", version.ref = "asciidoctor-plugins" }
+jmh = { id = "me.champeau.jmh", version = "0.6.5" }
+nohttp = { id = "io.spring.nohttp", version = "0.0.8" }
+nexus-publish = { id = "io.github.gradle-nexus.publish-plugin", version = "1.1.0" }
 
 [libraries]
 apiguardian = { module = "org.apiguardian:apiguardian-api", version.ref = "apiguardian" }
