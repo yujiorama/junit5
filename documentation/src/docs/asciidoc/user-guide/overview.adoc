@@ -1,9 +1,10 @@
 [[overview]]
-== Overview
+== 概要
 
-The goal of this document is to provide comprehensive reference documentation for
-programmers writing tests, extension authors, and engine authors as well as build tool
-and IDE vendors.
+// The goal of this document is to provide comprehensive reference documentation for
+// programmers writing tests, extension authors, and engine authors as well as build tool
+// and IDE vendors.
+このドキュメントは、実際にテストを書くプログラマーや拡張機能の作者、テストエンジンの作者、それからビルドツールや IDE ベンダーのための包括的なリファレンスです。
 
 ifdef::backend-html5[]
 ifdef::linkToPdf[]
@@ -12,79 +13,113 @@ endif::linkToPdf[]
 endif::backend-html5[]
 
 [[overview-what-is-junit-5]]
-=== What is JUnit 5?
+=== JUnit 5 とは何か
 
-Unlike previous versions of JUnit, JUnit 5 is composed of several different modules from
-three different sub-projects.
+// Unlike previous versions of JUnit, JUnit 5 is composed of several different modules from
+// three different sub-projects.
+過去の JUnit と違って、JUnit 5 は3種類のサブプロジェクトが提供するさまざまなモジュールを組み合わせたソフトウェアになっています。
 
 **JUnit 5 = _JUnit Platform_ + _JUnit Jupiter_ + _JUnit Vintage_**
 
-The **JUnit Platform** serves as a foundation for <<launcher-api,launching testing
-frameworks>> on the JVM. It also defines the `{TestEngine}` API for developing a testing
-framework that runs on the platform. Furthermore, the platform provides a
-<<running-tests-console-launcher,Console Launcher>> to launch the platform from the
-command line and a <<running-tests-junit-platform-runner,JUnit 4 based Runner>> for
-running any `TestEngine` on the platform in a JUnit 4 based environment. First-class
-support for the JUnit Platform also exists in popular IDEs (see
-<<running-tests-ide-intellij-idea>>, <<running-tests-ide-eclipse>>,
-<<running-tests-ide-netbeans>>, and <<running-tests-ide-vscode>>) and build tools (see
-<<running-tests-build-gradle>>, <<running-tests-build-maven>>, and
-<<running-tests-build-ant>>).
+// The **JUnit Platform** serves as a foundation for <<launcher-api,launching testing
+// frameworks>> on the JVM. It also defines the `{TestEngine}` API for developing a testing
+// framework that runs on the platform. Furthermore, the platform provides a
+// <<running-tests-console-launcher,Console Launcher>> to launch the platform from the
+// command line and a <<running-tests-junit-platform-runner,JUnit 4 based Runner>> for
+// running any `TestEngine` on the platform in a JUnit 4 based environment. First-class
+// support for the JUnit Platform also exists in popular IDEs (see
+// <<running-tests-ide-intellij-idea>>, <<running-tests-ide-eclipse>>,
+// <<running-tests-ide-netbeans>>, and <<running-tests-ide-vscode>>) and build tools (see
+// <<running-tests-build-gradle>>, <<running-tests-build-maven>>, and
+// <<running-tests-build-ant>>).
+**JUnit Platform** は JVM で <<launcher-api,テストフレームワークを起動する>> ための基盤を提供します。
+Platform で実行するテストフレームワークを開発するための `{TestEngine}` API も公開しています。
+さらに、コマンドラインから Platform を起動するための <<running-tests-console-launcher,Console Launcher>> や、JUnit 4 の環境で任意の `TestEngine` を実行するための <<running-tests-junit-platform-runner,JUnit 4 based Runner>> を提供します。
+JUnit Platform を最上級の機能として対応している IDE もたくさんあります（<<running-tests-ide-intellij-idea>>, <<running-tests-ide-eclipse>>,
+<<running-tests-ide-netbeans>>, <<running-tests-ide-vscode>>）。
+ビルドツールについても同様です（<<running-tests-build-gradle>>, <<running-tests-build-maven>>, <<running-tests-build-ant>>）。
 
-**JUnit Jupiter** is the combination of the new <<writing-tests,programming model>> and
-<<extensions,extension model>> for writing tests and extensions in JUnit 5. The Jupiter
-sub-project provides a `TestEngine` for running Jupiter based tests on the platform.
+// **JUnit Jupiter** is the combination of the new <<writing-tests,programming model>> and
+// <<extensions,extension model>> for writing tests and extensions in JUnit 5. The Jupiter
+// sub-project provides a `TestEngine` for running Jupiter based tests on the platform.
+**JUnit Jupiter** は JUnit 5 でテストを書いたり、JUnit 5 の拡張機能を作成するための新しい <<writing-tests,プログラミングモデル>> や <<extensions,拡張モデル>> を組み合わせたものです。
+Jupiter サブプロジェクトは、Platform で Jupiter のテストを実行するための `TestEngine` を提供します。
 
-**JUnit Vintage** provides a `TestEngine` for running JUnit 3 and JUnit 4 based tests on
-the platform. It requires JUnit 4.12 or later to be present on the class/module path.
+// **JUnit Vintage** provides a `TestEngine` for running JUnit 3 and JUnit 4 based tests on
+// the platform. It requires JUnit 4.12 or later to be present on the class/module path.
+**JUnit Vintage** は Platform で JUnit 3 や JUnit 4 に基づくテストを実行するための `TestEngine` を提供します。
+クラスパスあるいはモジュールパスに JUnit 4.12 より新しいバージョンの jar ファイルを配置しなければなりません。
 
 [[overview-java-versions]]
-=== Supported Java Versions
+=== 対応している Java のバージョン
 
-JUnit 5 requires Java 8 (or higher) at runtime. However, you can still test code that
-has been compiled with previous versions of the JDK.
+// JUnit 5 requires Java 8 (or higher) at runtime. However, you can still test code that
+// has been compiled with previous versions of the JDK.
+JUnit 5 を実行するには Java 8 より新しいバージョンが必要です。
+しかし、Java 8 より古いバージョンの JDK でコンパイルしたテストコードも実行できます。
 
 [[overview-getting-help]]
-=== Getting Help
+=== 分からないことの調べ方
 
-Ask JUnit 5 related questions on {StackOverflow} or chat with us on {Gitter}.
+// Ask JUnit 5 related questions on {StackOverflow} or chat with us on {Gitter}.
+JUnit 5 に関する質問は {StackOverflow} や JUnit チームの {Gitter} へ投稿するといいでしょう。
 
 [[overview-getting-started]]
-=== Getting Started
+=== JUnit 5 の始め方
 
 [[overview-getting-started-junit-artifacts]]
-==== Downloading JUnit Artifacts
+==== JUnit のアーティファクトをダウンロードする
 
-To find out what artifacts are available for download and inclusion in your project, refer
-to <<dependency-metadata>>. To set up dependency management for your build, refer to
-<<running-tests-build>> and the <<overview-getting-started-example-projects>>.
+// To find out what artifacts are available for download and inclusion in your project, refer
+// to <<dependency-metadata>>. To set up dependency management for your build, refer to
+// <<running-tests-build>> and the <<overview-getting-started-example-projects>>.
+あなたのプロジェクトに追加するべきアーティファクトを調べるには、 <<dependency-metadata>> を参照してください。
+依存ライブラリとして追加するには <<running-tests-build>> や <<overview-getting-started-example-projects>> を参照してください。
 
 [[overview-getting-started-features]]
-==== JUnit 5 Features
+==== JUnit 5 の機能
 
-To find out what features are available in JUnit 5 and how to use them, read the
-corresponding sections of this User Guide, organized by topic.
+// To find out what features are available in JUnit 5 and how to use them, read the
+// corresponding sections of this User Guide, organized by topic.
+JUnit 5 で利用できる機能や使い方を調べるには、このユーザーガイドの対応するセクションを読むといいでしょう。
+次のようなトピックで分類しています。
 
-* <<writing-tests, Writing Tests in JUnit Jupiter>>
-* <<migrating-from-junit4, Migrating from JUnit 4 to JUnit Jupiter>>
+// * <<writing-tests, Writing Tests in JUnit Jupiter>>
+// * <<migrating-from-junit4, Migrating from JUnit 4 to JUnit Jupiter>>
+// * <<running-tests>>
+// * <<extensions, Extension Model for JUnit Jupiter>>
+// * Advanced Topics
+//   - <<launcher-api>>
+//   - <<testkit>>
+* <<writing-tests, JUnit Jupiter でテストを書く>>
+* <<migrating-from-junit4, JUnit 4 から JUnit Jupiter へ移行する>>
 * <<running-tests>>
-* <<extensions, Extension Model for JUnit Jupiter>>
-* Advanced Topics
+* <<extensions, JUnit Jupiter の拡張モデル>>
+* 高度な内容
   - <<launcher-api>>
   - <<testkit>>
 
 [[overview-getting-started-example-projects]]
-==== Example Projects
+==== プロジェクト例
 
-To see complete, working examples of projects that you can copy and experiment with, the
-{junit5-samples-repo}[`junit5-samples`] repository is a good place to start. The
-`junit5-samples` repository hosts a collection of sample projects based on JUnit Jupiter,
-JUnit Vintage, and other testing frameworks. You'll find appropriate build scripts (e.g.,
-`build.gradle`, `pom.xml`, etc.) in the example projects. The links below highlight some
-of the combinations you can choose from.
+// To see complete, working examples of projects that you can copy and experiment with, the
+// {junit5-samples-repo}[`junit5-samples`] repository is a good place to start. The
+// `junit5-samples` repository hosts a collection of sample projects based on JUnit Jupiter,
+// JUnit Vintage, and other testing frameworks. You'll find appropriate build scripts (e.g.,
+// `build.gradle`, `pom.xml`, etc.) in the example projects. The links below highlight some
+// of the combinations you can choose from.
+{junit5-samples-repo}[`Junit 5 のサンプルプロジェクトリポジトリ`] には、そのまま実行できるサンプルプロジェクトがあるので、自分の環境にコピーして実験してみてください。
+JUnit Jupiter を使用するプロジェクトだけでなく、JUnit Vintage や他のテストフレームワークを使用するプロジェクトもあります。
+ビルドスクリプトも参考になるでしょう（`build.gradle` や `pom.xml` など）。
+ビルドツールやプログラミング言語の組み合わせが特徴的なプロジェクトのリンクは次のとおりです。
 
-* For Gradle and Java, check out the `{junit5-jupiter-starter-gradle}` project.
-* For Gradle and Kotlin, check out the `{junit5-jupiter-starter-gradle-kotlin}` project.
-* For Gradle and Groovy, check out the `{junit5-jupiter-starter-gradle-groovy}` project.
-* For Maven, check out the `{junit5-jupiter-starter-maven}` project.
-* For Ant, check out the `{junit5-jupiter-starter-ant}` project.
+// * For Gradle and Java, check out the `{junit5-jupiter-starter-gradle}` project.
+// * For Gradle and Kotlin, check out the `{junit5-jupiter-starter-gradle-kotlin}` project.
+// * For Gradle and Groovy, check out the `{junit5-jupiter-starter-gradle-groovy}` project.
+// * For Maven, check out the `{junit5-jupiter-starter-maven}` project.
+// * For Ant, check out the `{junit5-jupiter-starter-ant}` project.
+* Gradle と Java - `{junit5-jupiter-starter-gradle}`
+* Gradle と Kotlin - `{junit5-jupiter-starter-gradle-kotlin}`
+* Gradle と Groovy - `{junit5-jupiter-starter-gradle-groovy}`
+* Maven - `{junit5-jupiter-starter-maven}`
+* Ant - `{junit5-jupiter-starter-ant}`
