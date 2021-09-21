@@ -1,118 +1,157 @@
 [[migrating-from-junit4]]
-== Migrating from JUnit 4
+== JUnit 4 からの移行
 
-Although the JUnit Jupiter programming model and extension model will not support JUnit 4
-features such as `Rules` and `Runners` natively, it is not expected that source code
-maintainers will need to update all of their existing tests, test extensions, and custom
-build test infrastructure to migrate to JUnit Jupiter.
+// Although the JUnit Jupiter programming model and extension model will not support JUnit 4
+// features such as `Rules` and `Runners` natively, it is not expected that source code
+// maintainers will need to update all of their existing tests, test extensions, and custom
+// build test infrastructure to migrate to JUnit Jupiter.
+JUnit Jupiter のプログラミングモデルや拡張モデルは、直接的に JUnit 4 の `Rules` や `Runners` へ対応していません。
+しかし、JUnit Jupiter へ移行するために既存のソースコードやテスト用の拡張機能や、独自のテスト基盤を全て書き換えてくれるとは考えられません。
 
-Instead, JUnit provides a gentle migration path via a _JUnit Vintage test engine_ which
-allows existing tests based on JUnit 3 and JUnit 4 to be executed using the JUnit
-Platform infrastructure. Since all classes and annotations specific to JUnit Jupiter
-reside under a new `org.junit.jupiter` base package, having both JUnit 4 and JUnit
-Jupiter in the classpath does not lead to any conflicts. It is therefore safe to maintain
-existing JUnit 4 tests alongside JUnit Jupiter tests. Furthermore, since the JUnit team
-will continue to provide maintenance and bug fix releases for the JUnit 4.x baseline,
-developers have plenty of time to migrate to JUnit Jupiter on their own schedule.
-
+// Instead, JUnit provides a gentle migration path via a _JUnit Vintage test engine_ which
+// allows existing tests based on JUnit 3 and JUnit 4 to be executed using the JUnit
+// Platform infrastructure. Since all classes and annotations specific to JUnit Jupiter
+// reside under a new `org.junit.jupiter` base package, having both JUnit 4 and JUnit
+// Jupiter in the classpath does not lead to any conflicts. It is therefore safe to maintain
+// existing JUnit 4 tests alongside JUnit Jupiter tests. Furthermore, since the JUnit team
+// will continue to provide maintenance and bug fix releases for the JUnit 4.x baseline,
+// developers have plenty of time to migrate to JUnit Jupiter on their own schedule.
+そこで、新しい JUnit Platform で JUnit 3 と JUnit 4 のテストコードを実行できる、_JUnit Vintage テストエンジン_ という安全な移行パスを提供することにしました。
+JUnit Jupiter 専用のクラスとアノテーションが所属するのは `org.junit.jupiter` パッケージなので、JUnit 4 が同じクラスパスに存在していても、衝突することはありません。
+既存の JUnit 4 のテストを保守しながら、JUnit Jupiter のテストを安全に追加できるのです。
+また、JUnit チームは JUnit 4.x リリースの保守と不具合対応を継続していくつもりなので、開発者の皆さまは自分たちの都合に合わせて、十分な時間をかけて JUnit Jupiter へ移行できます。
 
 [[migrating-from-junit4-running]]
-=== Running JUnit 4 Tests on the JUnit Platform
+=== JUnit Platform で JUnit 4 のテストを実行する
 
-Just make sure that the `junit-vintage-engine` artifact is in your test runtime path. In
-that case JUnit 3 and JUnit 4 tests will automatically be picked up by the JUnit Platform
-launcher.
+// Just make sure that the `junit-vintage-engine` artifact is in your test runtime path. In
+// that case JUnit 3 and JUnit 4 tests will automatically be picked up by the JUnit Platform
+// launcher.
+実行時クラスパスに `junit-vintage-engine` を置いてください。
+それだけで、JUnit Platform launcher は自動的に JUnit 3 と JUnit 4 のテストを発見できるようになります。
 
-See the example projects in the {junit5-samples-repo}[`junit5-samples`] repository to
-find out how this is done with Gradle and Maven.
+// See the example projects in the {junit5-samples-repo}[`junit5-samples`] repository to
+// find out how this is done with Gradle and Maven.
+{junit5-samples-repo}[`junit5-samples`] リポジトリを見て、Gradle や Maven の設定方法を確認してください。
 
 [[migrating-from-junit4-categories-support]]
-==== Categories Support
+==== カテゴリー（Categories）の対応
 
-For test classes or methods that are annotated with `@Category`, the _JUnit Vintage test
-engine_ exposes the category's fully qualified class name as a <<running-tests-tags, tag>>
-of the corresponding test identifier. For example, if a test method is annotated with
-`@Category(Example.class)`, it will be tagged with `"com.acme.Example"`. Similar to the
-`Categories` runner in JUnit 4, this information can be used to filter the discovered
-tests before executing them (see <<running-tests>> for details).
-
+// For test classes or methods that are annotated with `@Category`, the _JUnit Vintage test
+// engine_ exposes the category's fully qualified class name as a <<running-tests-tags, tag>>
+// of the corresponding test identifier. For example, if a test method is annotated with
+// `@Category(Example.class)`, it will be tagged with `"com.acme.Example"`. Similar to the
+// `Categories` runner in JUnit 4, this information can be used to filter the discovered
+// tests before executing them (see <<running-tests>> for details).
+_JUnit Vintage テストエンジン_ は、`@Category` で修飾したテストクラスやテストメソッドについて、指定したカテゴリの完全修飾クラス名を <<running-tests-tags, タグ>> として公開します。
+例えば、テストメソッドを `@Category(Example.class)` で修飾しているなら、`"com.acme.Example"` というタグとして公開します。
+JUnit 4 の `Categories` ランナーは、JUnit Vintage テストエンジンの公開したタグからテストを選択したり発見したりできます。
+そして、このタグの情報はテストを実行する前に参照できるようになっています（<<running-tests>> を参照）。
 
 [[migrating-from-junit4-tips]]
-=== Migration Tips
+=== 移行のポイント
 
-The following are topics that you should be aware of when migrating existing JUnit 4
-tests to JUnit Jupiter.
+// The following are topics that you should be aware of when migrating existing JUnit 4
+// tests to JUnit Jupiter.
+JUnit 4 のテストを JUnit Jupiter へ移行するときは、次のような話題に注意してください。
 
-* Annotations reside in the `org.junit.jupiter.api` package.
-* Assertions reside in `org.junit.jupiter.api.Assertions`.
-  - Note that you may continue to use assertion methods from `org.junit.Assert` or any
-    other assertion library such as {AssertJ}, {Hamcrest}, {Truth}, etc.
-* Assumptions reside in `org.junit.jupiter.api.Assumptions`.
-  - Note that JUnit Jupiter 5.4 and later versions support methods from JUnit 4's
-    `org.junit.Assume` class for assumptions. Specifically, JUnit Jupiter supports JUnit
-    4's `AssumptionViolatedException` to signal that a test should be aborted instead of
-    marked as a failure.
-* `@Before` and `@After` no longer exist; use `@BeforeEach` and `@AfterEach` instead.
-* `@BeforeClass` and `@AfterClass` no longer exist; use `@BeforeAll` and `@AfterAll`
-  instead.
-* `@Ignore` no longer exists: use `@Disabled` or one of the other built-in
-  <<writing-tests-conditional-execution, execution conditions>> instead
-  - See also <<migrating-from-junit4-ignore-annotation-support>>.
-* `@Category` no longer exists; use `@Tag` instead.
-* `@RunWith` no longer exists; superseded by `@ExtendWith`.
-* `@Rule` and `@ClassRule` no longer exist; superseded by `@ExtendWith` and
-  `@RegisterExtension`
-  - See also <<migrating-from-junit4-rule-support>>.
-
+// * Annotations reside in the `org.junit.jupiter.api` package.
+// * Assertions reside in `org.junit.jupiter.api.Assertions`.
+//   - Note that you may continue to use assertion methods from `org.junit.Assert` or any
+//     other assertion library such as {AssertJ}, {Hamcrest}, {Truth}, etc.
+// * Assumptions reside in `org.junit.jupiter.api.Assumptions`.
+//   - Note that JUnit Jupiter 5.4 and later versions support methods from JUnit 4's
+//     `org.junit.Assume` class for assumptions. Specifically, JUnit Jupiter supports JUnit
+//     4's `AssumptionViolatedException` to signal that a test should be aborted instead of
+//     marked as a failure.
+// * `@Before` and `@After` no longer exist; use `@BeforeEach` and `@AfterEach` instead.
+// * `@BeforeClass` and `@AfterClass` no longer exist; use `@BeforeAll` and `@AfterAll`
+//   instead.
+// * `@Ignore` no longer exists: use `@Disabled` or one of the other built-in
+//   <<writing-tests-conditional-execution, execution conditions>> instead
+//   - See also <<migrating-from-junit4-ignore-annotation-support>>.
+// * `@Category` no longer exists; use `@Tag` instead.
+// * `@RunWith` no longer exists; superseded by `@ExtendWith`.
+// * `@Rule` and `@ClassRule` no longer exist; superseded by `@ExtendWith` and
+//   `@RegisterExtension`
+//   - See also <<migrating-from-junit4-rule-support>>.
+* アノテーションは `org.junit.jupiter.api` パッケージで探す
+* アサーションは `org.junit.jupiter.api.Assertions` クラスで探す
+  - `org.junit.Assert` のアサーションや、外部ライブラリのアサーション（{AssertJ}  {Hamcrest} {Truth} など）をそのまま利用できます
+* アサンプションは `org.junit.jupiter.api.Assumptions` クラスで探す
+  - JUnit Jupiter 5.4 から JUnit 4 の `org.junit.Assume` クラスのアサンプションを使用できるようになりました。
+    特に、テストを失敗させる代わりに中断させるため、JUnit 4 の `AssumptionViolatedException` をスローします。
+* `@Before` と `@After` の代わりに `@BeforeEach` と `@AfterEach` を使用する
+* `@BeforeClass` と `@AfterClass` の代わりに `@BeforeAll` と `@AfterAll` を使用する
+* `@Ignore` の代わりに `@Disabled` を使用する。あるいは組み込みの <<writing-tests-conditional-execution>> を使用する
+  - <<migrating-from-junit4-ignore-annotation-support>> も参照してください
+* `@Category` の代わりに `@Tag` を使用する
+* `@RunWith` の代わりに `@ExtendWith` を使用する
+* `@Rule` と `@ClassRule` の代わりに `@ExtendWith` と `@RegisterExtension` を使用する
+  - <<migrating-from-junit4-rule-support>> も参照してください
 
 [[migrating-from-junit4-rule-support]]
-=== Limited JUnit 4 Rule Support
+=== JUnit 4 の `Rule` 対応（制限付き）
 
-As stated above, JUnit Jupiter does not and will not support JUnit 4 rules natively. The
-JUnit team realizes, however, that many organizations, especially large ones, are likely
-to have large JUnit 4 code bases that make use of custom rules. To serve these
-organizations and enable a gradual migration path the JUnit team has decided to support a
-selection of JUnit 4 rules verbatim within JUnit Jupiter. This support is based on
-adapters and is limited to those rules that are semantically compatible to the JUnit
-Jupiter extension model, i.e. those that do not completely change the overall execution
-flow of the test.
+// As stated above, JUnit Jupiter does not and will not support JUnit 4 rules natively. The
+// JUnit team realizes, however, that many organizations, especially large ones, are likely
+// to have large JUnit 4 code bases that make use of custom rules. To serve these
+// organizations and enable a gradual migration path the JUnit team has decided to support a
+// selection of JUnit 4 rules verbatim within JUnit Jupiter. This support is based on
+// adapters and is limited to those rules that are semantically compatible to the JUnit
+// Jupiter extension model, i.e. those that do not completely change the overall execution
+// flow of the test.
+前に述べたとおり、JUnit Jupiter は直接的に JUnit 4 の Rule へ対応していません。
+JUnit チームも、大企業を含む多数の組織が独自のルールを活用していることは理解しているつもりです。
+そこで、そういう組織に段階的な移行パスを提供するため、JUnit 4 Rule の一部をそのまま JUnit Jupiter で再実装することにしました。
+アダプターを使用する実装になっているので、JUnit Jupiter の拡張モデルにおける意味論的な互換性は限定的です。
+例えば、テストの全体的な実行フローを完全に変更するのは不可能です。
 
-The `junit-jupiter-migrationsupport` module from JUnit Jupiter currently supports the
-following three `Rule` types including subclasses of these types:
+// The `junit-jupiter-migrationsupport` module from JUnit Jupiter currently supports the
+// following three `Rule` types including subclasses of these types:
+JUnit Jupiter の `junit-jupiter-migrationsupport` モジュールが対応している `Rule` （と一部の派生クラス）は次のとおりです。
 
 * `org.junit.rules.ExternalResource` (including `org.junit.rules.TemporaryFolder`)
 * `org.junit.rules.Verifier` (including `org.junit.rules.ErrorCollector`)
 * `org.junit.rules.ExpectedException`
 
-As in JUnit 4, Rule-annotated fields as well as methods are supported. By using these
-class-level extensions on a test class such `Rule` implementations in legacy code bases
-can be _left unchanged_ including the JUnit 4 rule import statements.
+// As in JUnit 4, Rule-annotated fields as well as methods are supported. By using these
+// class-level extensions on a test class such `Rule` implementations in legacy code bases
+// can be _left unchanged_ including the JUnit 4 rule import statements.
+JUnit 4 ではメソッドだけでなくフィールドも Rule で修飾できるようになっていました。
+クラスレベルの拡張機能を追加することで、そういう `Rule` の使い方をしている従来のコードベースを _そのまま_ 、import 文すら変更せずに実行できるようになります。
 
-This limited form of `Rule` support can be switched on by the class-level annotation
-`{EnableRuleMigrationSupport}`. This annotation is a _composed annotation_ which enables
-all rule migration support extensions: `VerifierSupport`, `ExternalResourceSupport`, and
-`ExpectedExceptionSupport`. You may alternatively choose to annotate your test class with
-`@EnableJUnit4MigrationSupport` which registers migration support for rules _and_ JUnit
-4's `@Ignore` annotation (see <<migrating-from-junit4-ignore-annotation-support>>).
+// This limited form of `Rule` support can be switched on by the class-level annotation
+// `{EnableRuleMigrationSupport}`. This annotation is a _composed annotation_ which enables
+// all rule migration support extensions: `VerifierSupport`, `ExternalResourceSupport`, and
+// `ExpectedExceptionSupport`. You may alternatively choose to annotate your test class with
+// `@EnableJUnit4MigrationSupport` which registers migration support for rules _and_ JUnit
+// 4's `@Ignore` annotation (see <<migrating-from-junit4-ignore-annotation-support>>).
+テストクラスを `{EnableRuleMigrationSupport}` で修飾すると、制限付きの `Rule` 対応を実現できます（クラス単位で切り替えます）。
+このアノテーションは _合成アノテーション_ で、全ての移行機能（`VerifierSupport, ExternalResourceSupport, ExpectedExceptionSupport`）を有効化します。
+代わりにテストクラスを `@EnableJunit4MigrationSupport` で修飾すると、`Rule` の移行機能を登録するだけでなく JUnit 4 の `@Ignore` アノテーションの移行機能も登録します（<<migrating-from-junit4-ignore-annotation-support>> を参照）。
 
-However, if you intend to develop a new extension for JUnit 5 please use the new
-extension model of JUnit Jupiter instead of the rule-based model of JUnit 4.
-
+// However, if you intend to develop a new extension for JUnit 5 please use the new
+// extension model of JUnit Jupiter instead of the rule-based model of JUnit 4.
+とはいえ、これから JUnit 5 のために拡張機能を作成するなら、JUnit 4 のルールモデルではなく、JUnit Jupiter の拡張モデルを使用してください。
 
 [[migrating-from-junit4-ignore-annotation-support]]
-=== JUnit 4 @Ignore Support
+=== JUnit 4 の `@Ignore` 対応
 
-In order to provide a smooth migration path from JUnit 4 to JUnit Jupiter, the
-`junit-jupiter-migrationsupport` module provides support for JUnit 4's `@Ignore`
-annotation analogous to Jupiter's `{Disabled}` annotation.
+// In order to provide a smooth migration path from JUnit 4 to JUnit Jupiter, the
+// `junit-jupiter-migrationsupport` module provides support for JUnit 4's `@Ignore`
+// annotation analogous to Jupiter's `{Disabled}` annotation.
+JUnit Jupiter へのスムーズ移行パスを実現するため、`junit-jupiter-migrationsupport` モジュールは JUnit 4 の `@Ignore` アノテーションに対応する機能を提供しています。
 
-To use `@Ignore` with JUnit Jupiter based tests, configure a _test_ dependency on the
-`junit-jupiter-migrationsupport` module in your build and then annotate your test class
-with `@ExtendWith(IgnoreCondition.class)` or `{EnableJUnit4MigrationSupport}` (which
-automatically registers the `IgnoreCondition` along with
-<<migrating-from-junit4-rule-support>>). The `IgnoreCondition` is an
-`{ExecutionCondition}` that disables test classes or test methods that are annotated with
-`@Ignore`.
+// To use `@Ignore` with JUnit Jupiter based tests, configure a _test_ dependency on the
+// `junit-jupiter-migrationsupport` module in your build and then annotate your test class
+// with `@ExtendWith(IgnoreCondition.class)` or `{EnableJUnit4MigrationSupport}` (which
+// automatically registers the `IgnoreCondition` along with
+// <<migrating-from-junit4-rule-support>>). The `IgnoreCondition` is an
+// `{ExecutionCondition}` that disables test classes or test methods that are annotated with
+// `@Ignore`.
+JUnit Jupiter のテストで `@Ignore` を使うには、_テスト依存ライブラリ_ に `junit-jupiter-migrationsupport` モジュールを追加して、テストクラスを `@ExtendWith(IgnoreCondition.class)` で修飾するか、`{EnableJUnit4MigrationSupport}` で修飾します（後者は <<migrating-from-junit4-rule-support>> と同時に `IgnoreCondition` を自動的に登録します）。
+`IgnoreCondition` は `@Ignore` で修飾したテストクラスやテストメソッドを無効化する `{ExecutionCondition}` の実装クラスです。
 
 [source,java,indent=0]
 ----
