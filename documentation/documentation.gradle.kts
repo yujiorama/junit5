@@ -144,7 +144,7 @@ tasks {
 	val generateConsoleLauncherOptions by registering(JavaExec::class) {
 		classpath = sourceSets["test"].runtimeClasspath
 		main = "org.junit.platform.console.ConsoleLauncher"
-		args("--help", "--disable-banner")
+		args("--help", "--disable-banner", "--disable-ansi-colors")
 		redirectOutput(consoleLauncherOptionsFile)
 	}
 
