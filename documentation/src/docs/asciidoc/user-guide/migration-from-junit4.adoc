@@ -1,5 +1,5 @@
 [[migrating-from-junit4]]
-== JUnit 4 からの移行
+== JUnit 4 から移行する
 
 // Although the JUnit Jupiter programming model and extension model will not support JUnit 4
 // features such as `Rules` and `Runners` natively, it is not expected that source code
