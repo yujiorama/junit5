@@ -1,29 +1,38 @@
 [[launcher-api]]
 === JUnit Platform Launcher API
 
-One of the prominent goals of JUnit 5 is to make the interface between JUnit and its
-programmatic clients – build tools and IDEs – more powerful and stable. The purpose is to
-decouple the internals of discovering and executing tests from all the filtering and
-configuration that's necessary from the outside.
+// One of the prominent goals of JUnit 5 is to make the interface between JUnit and its
+// programmatic clients – build tools and IDEs – more powerful and stable. The purpose is to
+// decouple the internals of discovering and executing tests from all the filtering and
+// configuration that's necessary from the outside.
+JUnit 5 の特徴的な目標の1つとして、ビルドツールや IDE などのプログラムから JUnit を操作する強力かつ安定したインターフェイスを提供することが挙げられます。
+目的は、テストを探索したり実行したりする内部動作と、外部から指定するテストをふるい落とす条件やその他の設定を完全に分離することです。
 
-JUnit 5 introduces the concept of a `Launcher` that can be used to discover, filter, and
-execute tests. Moreover, third party test libraries – like Spock, Cucumber, and FitNesse
-– can plug into the JUnit Platform's launching infrastructure by providing a custom
-`{TestEngine}`.
+// JUnit 5 introduces the concept of a `Launcher` that can be used to discover, filter, and
+// execute tests. Moreover, third party test libraries – like Spock, Cucumber, and FitNesse
+// – can plug into the JUnit Platform's launching infrastructure by providing a custom
+// `{TestEngine}`.
+JUnit 5 では `Launcher` という考え方を導入しました。
+テストを探索し、選抜し、実行する要素です。
+さらに、専用の `{TestEngine}` を使用すれば、Spock や Cucumber や FitNesse のようなサードパーティライブラリを JUnit Platform で実行できます。
 
-The launcher API is in the `{junit-platform-launcher}` module.
+// The launcher API is in the `{junit-platform-launcher}` module.
+Launcher API は `{junit-platform-launcher}` モジュールに含まれています。
 
-An example consumer of the launcher API is the `{ConsoleLauncher}` in the
-`{junit-platform-console}` project.
+// An example consumer of the launcher API is the `{ConsoleLauncher}` in the
+// `{junit-platform-console}` project.
+実際に Launcher API を使用している好例は `{junit-platform-console}` プロジェクトの `{ConsoleLauncher}` です。
 
 [[launcher-api-discovery]]
-==== Discovering Tests
+==== テストの発見
 
-Having _test discovery_ as a dedicated feature of the platform itself frees IDEs and build
-tools from most of the difficulties they had to go through to identify test classes and
-test methods in previous versions of JUnit.
+// Having _test discovery_ as a dedicated feature of the platform itself frees IDEs and build
+// tools from most of the difficulties they had to go through to identify test classes and
+// test methods in previous versions of JUnit.
+_テストの発見_ を JUnit Platform から独立した機能にすることで、旧バージョンの JUnit によるテストクラスやテストメソッドの特定に悩まされてきたビルドツールや IDE は楽になったはずです。
 
-Usage Example:
+// Usage Example:
+使い方。
 
 [source,java,indent=0]
 ----
@@ -35,107 +44,144 @@ include::{testDir}/example/UsingTheLauncherDemo.java[tags=imports]
 include::{testDir}/example/UsingTheLauncherDemo.java[tags=discovery]
 ----
 
-You can select classes, methods, and all classes in a package or even search for all tests
-in the class-path or module-path. Discovery takes place across all participating test
-engines.
+// You can select classes, methods, and all classes in a package or even search for all tests
+// in the class-path or module-path. Discovery takes place across all participating test
+// engines.
+クラスやメソッドを選択したり、パッケージの全てのクラスを選択したり、クラスパスやモジュールパスから全てのテストクラスを検索したりできるのです。
+テストの発見は、存在する全てのテスト実行エンジンが行います。
 
-The resulting `TestPlan` is a hierarchical (and read-only) description of all engines,
-classes, and test methods that fit the `LauncherDiscoveryRequest`. The client can
-traverse the tree, retrieve details about a node, and get a link to the original source
-(like class, method, or file position). Every node in the test plan has a _unique ID_
-that can be used to invoke a particular test or group of tests.
+// The resulting `TestPlan` is a hierarchical (and read-only) description of all engines,
+// classes, and test methods that fit the `LauncherDiscoveryRequest`. The client can
+// traverse the tree, retrieve details about a node, and get a link to the original source
+// (like class, method, or file position). Every node in the test plan has a _unique ID_
+// that can be used to invoke a particular test or group of tests.
+発見した結果は、読み取り専用で階層的な木構造構造のテスト計画（`TestPlan`）になります。
+データ構造の要素は `LauncherDiscoveryRequest` に適合したテスト実行エンジン、テストクラス、テストメソッドです。
+API のクライアントは木を行き来して節を特定し、詳細情報を取得し、取得元（クラスやメソッド、ファイル中の位置など）の情報を取得します。
+テスト計画に含まれる全ての節には _固有のID_ が割り当てられており、一部のテストやテストのグループを実行するために使用できます。
 
-Clients can register one or more `{LauncherDiscoveryListener}` implementations via the
-`{LauncherDiscoveryRequestBuilder}` to gain insight into events that occur during test
-discovery. By default, the builder registers an "abort on failure" listener that aborts
-test discovery after the first discovery failure is encountered. The default
-`LauncherDiscoveryListener` can be changed via the
-`junit.platform.discovery.listener.default` <<running-tests-config-params, configuration
-parameter>>.
+// Clients can register one or more `{LauncherDiscoveryListener}` implementations via the
+// `{LauncherDiscoveryRequestBuilder}` to gain insight into events that occur during test
+// discovery. By default, the builder registers an "abort on failure" listener that aborts
+// test discovery after the first discovery failure is encountered. The default
+// `LauncherDiscoveryListener` can be changed via the
+// `junit.platform.discovery.listener.default` <<running-tests-config-params, configuration
+// parameter>>.
+テストを発見している途中に発生したイベントから何らかの洞察を得るため、API のクライアントは1つ以上の `{LauncherDiscoveryListener}` を登録できます（`{LauncherDiscoveryRequestBuilder}` でインスタンスを作成します）。
+初期設定では `{LauncherDiscoveryRequestBuilder}` が「中断および失敗」リスナーを登録します。
+テストの発見に失敗したら、ただちに発見処理全体を中断するためです。
+設定パラメータの `junit.platform.discovery.listener.default` に完全修飾クラス名を指定すれば変更できます。
 
 [[launcher-api-execution]]
-==== Executing Tests
+==== テストの実行
 
-To execute tests, clients can use the same `LauncherDiscoveryRequest` as in the discovery
-phase or create a new request. Test progress and reporting can be achieved by registering
-one or more `{TestExecutionListener}` implementations with the `Launcher` as in the
-following example.
+// To execute tests, clients can use the same `LauncherDiscoveryRequest` as in the discovery
+// phase or create a new request. Test progress and reporting can be achieved by registering
+// one or more `{TestExecutionListener}` implementations with the `Launcher` as in the
+// following example.
+テストを実行するには発見フェーズと同じ `LauncherDiscoveryRequest` を使用するか、新しい要求を作成して使用します。
+進行状況や結果を報告するには1つ以上の `{TestExecutionListener}` を登録します。
 
 [source,java,indent=0]
 ----
 include::{testDir}/example/UsingTheLauncherDemo.java[tags=execution]
 ----
 
-There is no return value for the `execute()` method, but you can use a
-`TestExecutionListener` to aggregate the results. For examples see the
-`{SummaryGeneratingListener}`, `{LegacyXmlReportGeneratingListener}`, and
-`{UniqueIdTrackingListener}`.
+// There is no return value for the `execute()` method, but you can use a
+// `TestExecutionListener` to aggregate the results. For examples see the
+// `{SummaryGeneratingListener}`, `{LegacyXmlReportGeneratingListener}`, and
+// `{UniqueIdTrackingListener}`.
+`execute()` メソッドには返り値がありません。
+代わりに `TestExecutionListener` でテストの結果を集約できるようになっています。
+具体的には `{SummaryGeneratingListener}` や `{LegacyXmlReportGeneratingListener}` や
+`{UniqueIdTrackingListener}` のソースコードを参照してください。
 
 [[launcher-api-engines-custom]]
-==== Registering a TestEngine
+==== テスト実行エンジンの登録
 
-JUnit provides three `{TestEngine}` implementations.
+// JUnit provides three `{TestEngine}` implementations.
+JUnit は3種類の `{TestEngine}` の実装クラスを提供しています。
 
-* `{junit-jupiter-engine}`: The core of JUnit Jupiter.
-* `{junit-vintage-engine}`: A thin layer on top of JUnit 4 to allow running _vintage_
-  tests with the launcher infrastructure.
-* `{junit-platform-suite-engine}`: To execute declarative suites of tests with the
-  launcher infrastructure.
+// * `{junit-jupiter-engine}`: The core of JUnit Jupiter.
+// * `{junit-vintage-engine}`: A thin layer on top of JUnit 4 to allow running _vintage_
+//   tests with the launcher infrastructure.
+// * `{junit-platform-suite-engine}`: To execute declarative suites of tests with the
+//   launcher infrastructure.
+* `{junit-jupiter-engine}`: JUnit Jupiter の基本となるエンジンです
+* `{junit-vintage-engine}`: _骨董品_ のようなテストを JUnit Platform で実行するための、JUnit 4 を薄いレイヤーで包み込んだエンジンです
+* `{junit-platform-suite-engine}`: JUnit Platform で宣言的に構成したテストスイートを実行するエンジンです
 
-Third parties may also contribute their own `TestEngine` by implementing the interfaces in
-the {junit-platform-engine} module and _registering_ their engine. Engine registration is
-supported via Java's `{ServiceLoader}` mechanism. For example, the `junit-jupiter-engine`
-module registers its `org.junit.jupiter.engine.JupiterTestEngine` in a file named
-`org.junit.platform.engine.TestEngine` within the `/META-INF/services` folder in the
-`junit-jupiter-engine` JAR.
+// Third parties may also contribute their own `TestEngine` by implementing the interfaces in
+// the {junit-platform-engine} module and _registering_ their engine. Engine registration is
+// supported via Java's `{ServiceLoader}` mechanism. For example, the `junit-jupiter-engine`
+// module registers its `org.junit.jupiter.engine.JupiterTestEngine` in a file named
+// `org.junit.platform.engine.TestEngine` within the `/META-INF/services` folder in the
+// `junit-jupiter-engine` JAR.
+サードパーティライブラリの作者は `{junit-platform-engine}` モジュールの `TestEngine` インターフェイスの実装クラスを提供し、_登録_ させることができます。
+テスト実行エンジンは Java の `{ServiceLoader}` で登録します。
+例えば、`junit-jupiter-engine` モジュールは `org.junit.jupiter.engine.JupiterTestEngine` を登録するのですが、それは jar ファイルの `/META-INF/services/org.junit.platform.engine.TestEngine` に `org.junit.jupiter.engine.JupiterTestEngine` と記述されているからです。
 
-NOTE: `{HierarchicalTestEngine}` is a convenient abstract base implementation (used by
-the `{junit-jupiter-engine}`) that only requires implementors to provide the logic for
-test discovery. It implements execution of `TestDescriptors` that implement the `Node`
-interface, including support for parallel execution.
+// NOTE: `{HierarchicalTestEngine}` is a convenient abstract base implementation (used by
+// the `{junit-jupiter-engine}`) that only requires implementors to provide the logic for
+// test discovery. It implements execution of `TestDescriptors` that implement the `Node`
+// interface, including support for parallel execution.
+NOTE: `{HierarchicalTestEngine}` を抽象基底クラスとして使用すると、テストを発見するロジックだけを実装すれば済むので便利です（`{junit-jupiter-engine}` でも使用しています）。
+`{HierarchicalTestEngine}` は `Node` インターフェイスを実装いた `TestDescriptors` を実装するようになっており、並列実行にも対応しています。
 
 [[launcher-api-engines-custom-ids]]
 [WARNING]
-.The `junit-` prefix is reserved for TestEngines from the JUnit Team
+// .The `junit-` prefix is reserved for TestEngines from the JUnit Team
+.接頭辞が `junit-` のテスト実行エンジン ID は JUnit チームのために予約済みです
 ====
-The JUnit Platform `Launcher` enforces that only `TestEngine` implementations published
-by the JUnit Team may use the `junit-` prefix for their `TestEngine` IDs.
+// The JUnit Platform `Launcher` enforces that only `TestEngine` implementations published
+// by the JUnit Team may use the `junit-` prefix for their `TestEngine` IDs.
+Launcher API は JUnit チームの公開する `TestEngine` 実装の ID だけが `junit-` で始まることを強制します。
 
-* If any third-party `TestEngine` claims to be `junit-jupiter` or `junit-vintage`, an
-  exception will be thrown, immediately halting execution of the JUnit Platform.
-* If any third-party `TestEngine` uses the `junit-` prefix for its ID, a warning message
-  will be logged. Later releases of the JUnit Platform will throw an exception for such
-  violations.
+// * If any third-party `TestEngine` claims to be `junit-jupiter` or `junit-vintage`, an
+//   exception will be thrown, immediately halting execution of the JUnit Platform.
+// * If any third-party `TestEngine` uses the `junit-` prefix for its ID, a warning message
+//   will be logged. Later releases of the JUnit Platform will throw an exception for such
+//   violations.
+* サードパーティライブラリのテストエンジンの報告する ID が `junit-jupiter` や `junit-vintage` なら、JUnit Platform が例外をスローし、テストの実行はただちに中断します。
+* サードパーティライブラリのテストエンジンの報告する ID が `junit-` から始まる場合、JUnit Platform は警告をログ出力します。将来のバージョンでは例外をスローさせるかもしれません。
 ====
 
 [[launcher-api-post-discovery-filters-custom]]
-==== Registering a PostDiscoveryFilter
+==== テスト発見後処理フィルター（PostDiscoveryFilter） を登録する
 
-In addition to specifying post-discovery filters as part of a `{LauncherDiscoveryRequest}`
-passed to the `{Launcher}` API, `{PostDiscoveryFilter}` implementations will be discovered
-at runtime via Java's `{ServiceLoader}` mechanism and automatically applied by the
-`Launcher` in addition to those that are part of the request.
+// In addition to specifying post-discovery filters as part of a `{LauncherDiscoveryRequest}`
+// passed to the `{Launcher}` API, `{PostDiscoveryFilter}` implementations will be discovered
+// at runtime via Java's `{ServiceLoader}` mechanism and automatically applied by the
+// `Launcher` in addition to those that are part of the request.
+Lancher API へ渡す `{LauncherDiscoveryRequest}` にテスト発見後処理フィルターを設定するだけでなく、Java の `{ServiceLoader}` を使用して `{PostDiscoveryFilter}` の実装クラスを発見し、自動的に Launcher へ登録できます。
 
-For example, an `example.CustomTagFilter` class implementing `PostDiscoveryFilter` and
-declared within the `/META-INF/services/org.junit.platform.launcher.PostDiscoveryFilter`
-file is loaded and applied automatically.
+// For example, an `example.CustomTagFilter` class implementing `PostDiscoveryFilter` and
+// declared within the `/META-INF/services/org.junit.platform.launcher.PostDiscoveryFilter`
+// file is loaded and applied automatically.
+例えば、`PostDiscoveryFilter` を実装した `example.CustomTagFilter` （の完全修飾クラス名）を `/META-INF/services/org.junit.platform.launcher.PostDiscoveryFilter` に記述しておけば、自動的に登録するのです。
 
 [[launcher-api-launcher-session-listeners-custom]]
-==== Registering a LauncherSessionListener
+==== セッションリスナー（LauncherSessionListener）を登録する
 
-Registered implementations of `{LauncherSessionListener}` are notified when a
-`{LauncherSession}` is opened (before a `{Launcher}` first discovers and executes tests)
-and closed (when no more tests will be discovered or executed). They can be registered
-programmatically via the `{LauncherConfig}` that is passed to the `{LauncherFactory}`, or
-they can be discovered at runtime via Java's `{ServiceLoader}` mechanism and automatically
-registered with `LauncherSession` (unless automatic registration is disabled.)
+// Registered implementations of `{LauncherSessionListener}` are notified when a
+// `{LauncherSession}` is opened (before a `{Launcher}` first discovers and executes tests)
+// and closed (when no more tests will be discovered or executed). They can be registered
+// programmatically via the `{LauncherConfig}` that is passed to the `{LauncherFactory}`, or
+// they can be discovered at runtime via Java's `{ServiceLoader}` mechanism and automatically
+// registered with `LauncherSession` (unless automatic registration is disabled.)
+`{LauncherSessionListener}` の実装クラスを登録すると、`{LauncherSession}` を開いたとき（`{Launcher}` が最初にテストを発見し、実行する前）や、閉じるとき（それ以上発見したり実行したりするテストが無くなったとき）に通知します。
+`{LauncherFactory}` へ渡す `{LauncherConfig}` で手続き的に登録することもできますし、Java の `{ServiceLoader}` を使用して自動的に登録することもできます（自動登録機能が有効なら）。
 
-A `{LauncherSessionListener}` is well suited for implementing once-per-JVM setup/teardown
-behavior since it's called before the first and after the last test in a launcher session,
-respectively. The scope of a launcher session depends on the used IDE or build tool but
-usually corresponds to the lifecycle of the test JVM. A custom listener that starts an
-HTTP server before executing the first test and stops it after the last test has been
-executed, could look like this:
+// A `{LauncherSessionListener}` is well suited for implementing once-per-JVM setup/teardown
+// behavior since it's called before the first and after the last test in a launcher session,
+// respectively. The scope of a launcher session depends on the used IDE or build tool but
+// usually corresponds to the lifecycle of the test JVM. A custom listener that starts an
+// HTTP server before executing the first test and stops it after the last test has been
+// executed, could look like this:
+`{LauncherSessionListener}` は JVM が1回だけ `setup` と `teardown` を実行する状況に最適化されています。
+1つのセッションで最初のテストを発見する前と、最後のテストが終了した後に呼び出されるからです。
+セッションの有効範囲は使用している IDE やビルドツールによって異なりますが、基本的にはテストを実行する JVM のライフサイクルと一致します。
+次のコード例は、最初のテストを発見する前に HTTP サーバーを起動し、最後のテストが終了した後に HTTP サーバーを停止するリスナーです。
 
 [source,java]
 .src/test/java/example/session/GlobalSetupTeardownListener.java
@@ -144,15 +190,20 @@ package example.session;
 
 include::{testDir}/example/session/GlobalSetupTeardownListener.java[tags=user_guide]
 ----
-<1> Start the HTTP server
-<2> Export its dynamic port as a system property for consumption by tests
-<3> Stop the HTTP server
+// <1> Start the HTTP server
+// <2> Export its dynamic port as a system property for consumption by tests
+// <3> Stop the HTTP server
+<1> HTTP サーバーを起動します
+<2> テストから参照するための待ち受けポート番号を動的に決定し、システムプロパティへ設定します
+<3> HTTP サーバーを停止します
 
-This sample uses the HTTP server implementation from the jdk.httpserver module that comes
-with the JDK but would work similarly with any other server or resource. In order for the
-listener to be picked up by JUnit Platform, you need to register it as a service by adding
-a resource file with the following name and contents to your test runtime classpath (e.g.
-by adding the file to `src/test/resources`):
+// This sample uses the HTTP server implementation from the jdk.httpserver module that comes
+// with the JDK but would work similarly with any other server or resource. In order for the
+// listener to be picked up by JUnit Platform, you need to register it as a service by adding
+// a resource file with the following name and contents to your test runtime classpath (e.g.
+// by adding the file to `src/test/resources`):
+このサンプルコードでは JDK に付属している `jdk.httserver` モジュールの実装を使用していますが、他の実装でも同じように記述できるでしょう。
+リスナーを自動的に JUnit Platform へ登録するには、次のようなリソースファイルをテストランタイムクラスパスに配置します（`src/test/resources` などに配置することになるでしょう）。
 
 [source]
 .src/test/resources/META-INF/services/org.junit.platform.launcher.LauncherSessionListener
@@ -160,7 +211,8 @@ by adding the file to `src/test/resources`):
 include::{testResourcesDir}/META-INF/services/org.junit.platform.launcher.LauncherSessionListener[]
 ----
 
-You can now use the resource from your test:
+// You can now use the resource from your test:
+テストは次のように記述できます。
 
 [source,java]
 .src/test/java/example/session/HttpTests.java
@@ -169,88 +221,111 @@ package example.session;
 
 include::{testDir}/example/session/HttpTests.java[tags=user_guide]
 ----
-<1> Read the port of the server from the system property set by the listener
-<2> Send a request to the server
-<3> Check the status code of the response
+// <1> Read the port of the server from the system property set by the listener
+// <2> Send a request to the server
+// <3> Check the status code of the response
+<1> リスナーの設定したシステムプロパティから待ち受けポート番号を読み取ります
+<2> HTTP サーバーにリクエストを送信します
+<3> レスポンスのステータスコードを確認します
 
 [[launcher-api-launcher-discovery-listeners-custom]]
-==== Registering a LauncherDiscoveryListener
+==== テスト発見リスナー（LauncherDiscoveryListener）を登録します
 
-In addition to specifying discovery listeners as part of a `{LauncherDiscoveryRequest}` or
-registering them programmatically via the `{Launcher}` API, custom
-`LauncherDiscoveryListener` implementations can be discovered at runtime via Java's
-`{ServiceLoader}` mechanism and automatically registered with the `Launcher` created via
-the `{LauncherFactory}`.
+// In addition to specifying discovery listeners as part of a `{LauncherDiscoveryRequest}` or
+// registering them programmatically via the `{Launcher}` API, custom
+// `LauncherDiscoveryListener` implementations can be discovered at runtime via Java's
+// `{ServiceLoader}` mechanism and automatically registered with the `Launcher` created via
+// the `{LauncherFactory}`.
+Lancher API へ渡す `{LauncherDiscoveryRequest}` にテスト発見後処理フィルターを設定するだけでなく、Java の `{ServiceLoader}` を使用して `{LauncherDiscoveryListener}` の実装クラスを自動的に発見し、`{LauncherFactory}` で作成した `Launcher` へ登録できます。
 
-For example, an `example.CustomLauncherDiscoveryListener` class implementing
-`LauncherDiscoveryListener` and declared within the
-`/META-INF/services/org.junit.platform.launcher.LauncherDiscoveryListener` file is loaded
-and registered automatically.
+// For example, an `example.CustomLauncherDiscoveryListener` class implementing
+// `LauncherDiscoveryListener` and declared within the
+// `/META-INF/services/org.junit.platform.launcher.LauncherDiscoveryListener` file is loaded
+// and registered automatically.
+例えば、`LauncherDiscoveryListener` を実装した `example.CustomLauncherDiscoveryListener` （の完全修飾クラス名）を `/META-INF/services/org.junit.platform.launcher.LauncherDiscoveryListener` に記述しておけば、自動的に登録するのです。
 
 [[launcher-api-listeners-custom]]
-==== Registering a TestExecutionListener
+==== テスト実行リスナー（TestExecutionListener）を登録する
 
-In addition to the public `{Launcher}` API method for registering test execution listeners
-programmatically, custom `{TestExecutionListener}` implementations will be discovered at
-runtime via Java's `{ServiceLoader}` mechanism and automatically registered with the
-`Launcher` created via the `{LauncherFactory}`.
+// In addition to the public `{Launcher}` API method for registering test execution listeners
+// programmatically, custom `{TestExecutionListener}` implementations will be discovered at
+// runtime via Java's `{ServiceLoader}` mechanism and automatically registered with the
+// `Launcher` created via the `{LauncherFactory}`.
+`{Launcher}` API のメソッドで手続き的にテスト実行リスナーを登録するだけでなく、Java の `{ServiceLoader}` を使用して `{TestExecutionListener}` の実装クラスを自動的に発見し、`{LauncherFactory}` で作成した `Launcher` へ登録できます。
 
-For example, an `example.CustomTestExecutionListener` class implementing
-`TestExecutionListener` and declared within the
-`/META-INF/services/org.junit.platform.launcher.TestExecutionListener` file is loaded and
-registered automatically.
+// For example, an `example.CustomTestExecutionListener` class implementing
+// `TestExecutionListener` and declared within the
+// `/META-INF/services/org.junit.platform.launcher.TestExecutionListener` file is loaded and
+// registered automatically.
+例えば、`TestExecutionListener` を実装した `example.CustomTestExecutionListener` （の完全修飾クラス名）を `/META-INF/services/org.junit.platform.launcher.TestExecutionListener` に記述しておけば、自動的に登録するのです。
 
 [[launcher-api-listeners-config]]
-==== Configuring a TestExecutionListener
+==== テスト実行リスナーの設定
 
-When a `{TestExecutionListener}` is registered programmatically via the `{Launcher}` API,
-the listener may provide programmatic ways for it to be configured -- for example, via its
-constructor, setter methods, etc. However, when a `TestExecutionListener` is registered
-automatically via Java's `ServiceLoader` mechanism (see
-<<launcher-api-listeners-custom>>), there is no way for the user to directly configure the
-listener. In such cases, the author of a `TestExecutionListener` may choose to make the
-listener configurable via <<running-tests-config-params, configuration parameters>>. The
-listener can then access the configuration parameters via the `TestPlan` supplied to the
-`testPlanExecutionStarted(TestPlan)` and `testPlanExecutionFinished(TestPlan)` callback
-methods. See the `{UniqueIdTrackingListener}` for an example.
+// When a `{TestExecutionListener}` is registered programmatically via the `{Launcher}` API,
+// the listener may provide programmatic ways for it to be configured -- for example, via its
+// constructor, setter methods, etc. However, when a `TestExecutionListener` is registered
+// automatically via Java's `ServiceLoader` mechanism (see
+// <<launcher-api-listeners-custom>>), there is no way for the user to directly configure the
+// listener. In such cases, the author of a `TestExecutionListener` may choose to make the
+// listener configurable via <<running-tests-config-params, configuration parameters>>. The
+// listener can then access the configuration parameters via the `TestPlan` supplied to the
+// `testPlanExecutionStarted(TestPlan)` and `testPlanExecutionFinished(TestPlan)` callback
+// methods. See the `{UniqueIdTrackingListener}` for an example.
+`{TestExecutionListener}` を `{Launcher}` API で手続き的に登録するときは、手続き的にリスナーの設定を変更できます。
+例えばコンストラクタやセッターメソッドを使う方法です。
+しかし、`{ServiceLoader}` で自動的に登録するときは（<<launcher-api-listeners-custom>> を参照）、直接的にリスナーの設定を変更する方法がありません。
+そういう場合、`TestExecutionListener` の作者はリスナーの設定を <<running-tests-config-params, 設定パラメータ>> で指定できるようにするといいでしょう。
+リスナーは `testPlanExecutionStarted(TestPlan)` メソッドや `testPlanExecutionFinished(TestPlan)` メソッドを実装すれば、`TestPlan` から設定パラメータを参照できます。
+具体例は `{UniqueIdTrackingListener}` を参照してください。
 
 [[launcher-api-listeners-custom-deactivation]]
-==== Deactivating a TestExecutionListener
+==== テスト実行リスナーを不活性にする
 
-Sometimes it can be useful to run a test suite _without_ certain execution listeners being
-active. For example, you might have custom a `{TestExecutionListener}` that sends the test
-results to an external system for reporting purposes, and while debugging you might not
-want these _debug_ results to be reported. To do this, provide a pattern for the
-`junit.platform.execution.listeners.deactivate` _configuration parameter_ to specify which
-execution listeners should be deactivated (i.e. not registered) for the current test run.
+// Sometimes it can be useful to run a test suite _without_ certain execution listeners being
+// active. For example, you might have custom a `{TestExecutionListener}` that sends the test
+// results to an external system for reporting purposes, and while debugging you might not
+// want these _debug_ results to be reported. To do this, provide a pattern for the
+// `junit.platform.execution.listeners.deactivate` _configuration parameter_ to specify which
+// execution listeners should be deactivated (i.e. not registered) for the current test run.
+テスト実行リスナーを _使わずに_ テストスイートを実行できるようになっていると役に立つ場合があります。
+例えば、自作の `{TestExecutionListener}` が外部システムにテスト結果を送信するようになっているとしたら、_デバッグ実行した結果_ は送信したくないはずです。
+そういうときは、設定パラメータの `junit.platform.execution.listeners.deactivate` へテスト実行リスナーの完全修飾クラス名を指定すると、そのテスト実行リスナーは不活性（未登録状態）になります。
 
 [NOTE]
 ====
-Only listeners registered via the `{ServiceLoader}` mechanism within the
-`/META-INF/services/org.junit.platform.launcher.TestExecutionListener` file can be
-deactivated. In other words, any `TestExecutionListener` registered explicitly via the
-`{LauncherDiscoveryRequest}` cannot be deactivated via the
-`junit.platform.execution.listeners.deactivate` _configuration parameter_.
+// Only listeners registered via the `{ServiceLoader}` mechanism within the
+// `/META-INF/services/org.junit.platform.launcher.TestExecutionListener` file can be
+// deactivated. In other words, any `TestExecutionListener` registered explicitly via the
+// `{LauncherDiscoveryRequest}` cannot be deactivated via the
+// `junit.platform.execution.listeners.deactivate` _configuration parameter_.
+不活性にできるのは `/META-INF/services/org.junit.platform.launcher.TestExecutionListener` に記述して `{ServiceLoader}` で登録したリスナーだけです。
+つまり、`{LauncherDiscoveryRequest}` で明示的に指定したリスナーは不活性にできません。
 
-In addition, since execution listeners are registered before the test run starts, the
-`junit.platform.execution.listeners.deactivate` _configuration parameter_ can only be
-supplied as a JVM system property or via the JUnit Platform configuration file (see
-<<running-tests-config-params>> for details). This _configuration parameter_ cannot be
-supplied in the `LauncherDiscoveryRequest` that is passed to the `{Launcher}`.
+// In addition, since execution listeners are registered before the test run starts, the
+// `junit.platform.execution.listeners.deactivate` _configuration parameter_ can only be
+// supplied as a JVM system property or via the JUnit Platform configuration file (see
+// <<running-tests-config-params>> for details). This _configuration parameter_ cannot be
+// supplied in the `LauncherDiscoveryRequest` that is passed to the `{Launcher}`.
+また、テスト実行を開始する前にテスト実行リスナーを登録するようになっているので、`junit.platform.execution.listeners.deactivate` は JVM のシステムパラメータか、設定ファイル（<<running-tests-config-params>> を参照）でしか指定できません。
+`{Launcher}` へ渡す `LauncherDiscoveryRequest` では指定できないのです。
 ====
 
 [[launcher-api-listeners-custom-deactivation-pattern]]
-===== Pattern Matching Syntax
+===== パターンマッチ記法
 
-Refer to <<running-tests-config-params-deactivation-pattern>> for details.
+// Refer to <<running-tests-config-params-deactivation-pattern>> for details.
+<<running-tests-config-params-deactivation-pattern>> を参照してください。
 
 [[launcher-api-launcher-config]]
-==== Configuring the Launcher
+==== Launcher の設定
 
-If you require fine-grained control over automatic detection and registration of test
-engines and listeners, you may create an instance of `{LauncherConfig}` and supply that to
-the `{LauncherFactory}`. Typically, an instance of `LauncherConfig` is created via the
-built-in fluent _builder_ API, as demonstrated in the following example.
+// If you require fine-grained control over automatic detection and registration of test
+// engines and listeners, you may create an instance of `{LauncherConfig}` and supply that to
+// the `{LauncherFactory}`. Typically, an instance of `LauncherConfig` is created via the
+// built-in fluent _builder_ API, as demonstrated in the following example.
+自動検出機能や登録機能より、テストエンジンやリスナーの登録を詳細に制御したいときは、`{LauncherConfig}` のインスタンスを作成して `{LauncherFactory}` に渡すようにします。
+普通は _ビルダー_ API で `{LauncherConfig}` のインスタンスを作成します。
 
 [source,java,indent=0]
 ----
