@@ -1,17 +1,25 @@
 [[junit-platform-reporting]]
-=== JUnit Platform Reporting
+=== JUnit Platform レポート機能
 
-The `junit-platform-reporting` artifact contains `{TestExecutionListener}`
-implementations that generate test reports. These listeners are typically used by IDEs
-and build tools. The package `org.junit.platform.reporting.legacy.xml` currently contains
-the following implementation.
+// The `junit-platform-reporting` artifact contains `{TestExecutionListener}`
+// implementations that generate test reports. These listeners are typically used by IDEs
+// and build tools. The package `org.junit.platform.reporting.legacy.xml` currently contains
+// the following implementation.
+`junit-platform-reporting` アーティファクトには、テスト結果レポートを生成する `{TestExecutionListener}` の実装クラスが複数含まれています。
+これらのリスナーを使用するのはたいていの場合 IDE やビルドツールです。
+`org.junit.platform.reporting.legacy.xml` パッケージには、次のような実装クラスがあります。
 
-* `{LegacyXmlReportGeneratingListener}` generates a separate XML report for each root in
-  the `{TestPlan}`. Note that the generated XML format is compatible with the de facto
-  standard for JUnit 4 based test reports that was made popular by the Ant build system.
-  The `LegacyXmlReportGeneratingListener` is used by the
-  <<running-tests-console-launcher>> as well.
+// * `{LegacyXmlReportGeneratingListener}` generates a separate XML report for each root in
+//   the `{TestPlan}`. Note that the generated XML format is compatible with the de facto
+//   standard for JUnit 4 based test reports that was made popular by the Ant build system.
+//   The `LegacyXmlReportGeneratingListener` is used by the
+//   <<running-tests-console-launcher>> as well.
+* `{LegacyXmlReportGeneratingListener}` は `{TestPlan}` のルートノードごとに XML 形式のテスト結果レポートを生成します。
+  生成するレポートは JUnit 4 のテスト結果レポート形式として事実上の標準になっている XML 形式のテスト結果レポートで、Ant により一般的になりました。
+  `LegacyXmlReportGeneratingListener` は <<running-tests-console-launcher>> から使うと便利です。
 
-NOTE: The `{junit-platform-launcher}` module also contains `TestExecutionListener`
-implementations that can be used for reporting purposes. See <<running-tests-listeners>>
-for details.
+// NOTE: The `{junit-platform-launcher}` module also contains `TestExecutionListener`
+// implementations that can be used for reporting purposes. See <<running-tests-listeners>>
+// for details.
+NOTE: `{junit-platform-launcher}` モジュールにもテスト結果レポートの生成に使用できる `TestExecutionListener` の実装クラスが含まれています。
+詳しくは <<running-tests-listeners>> を参照してください。
