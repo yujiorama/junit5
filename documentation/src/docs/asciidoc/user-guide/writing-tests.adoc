@@ -865,7 +865,7 @@ include::{testDir}/example/OrderedNestedTestClassesDemo.java[tags=user_guide]
 // of each test class before executing each _test method_ (see
 // <<writing-tests-classes-and-methods>>). This "per-method" test instance lifecycle is the
 // default behavior in JUnit Jupiter and is analogous to all previous versions of JUnit.
-それぞれのテストメソッドが独立して実行できるよう、そして、変更可能なテストインスタンスの状態に基づく予期せぬ副作用を無くすため、JUnit は _テストメソッド_ （<<writing-tests-class-and-methods>>）を実行するたびに、テストクラスの新しいインスタンスを作るようにしました。
+それぞれのテストメソッドが独立して実行できるよう、そして、変更可能なテストインスタンスの状態に基づく予期せぬ副作用を無くすため、JUnit は _テストメソッド_ （<<writing-tests-classes-and-methods>>）を実行するたびに、テストクラスの新しいインスタンスを作るようにしました。
 この、メソッド単位（per-method）のインスタンスライフサイクル管理は、JUnit Jupiter の基本的な振る舞いであり、過去の全ての JUnit と同じものです。
 
 // NOTE: Please note that the test class will still be instantiated if a given _test method_
