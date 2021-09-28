@@ -1,50 +1,61 @@
 [[junit-platform-suite-engine]]
-=== JUnit Platform Suite Engine
+=== JUnit Platform テストスイートエンジン
 
-The JUnit Platform supports the declarative definition and execution of suites of tests
-from _any_ test engine using the JUnit Platform.
+// The JUnit Platform supports the declarative definition and execution of suites of tests
+// from _any_ test engine using the JUnit Platform.
+JUnit Platform では、JUnit Platform に対応している _あらゆる_ テスト実行エンジンで、宣言的なテストスイートの宣言と実行ができるようになっています。
 
 [[junit-platform-suite-engine-setup]]
-==== Setup
+==== 準備
 
-In addition to the `junit-platform-suite-api` and `junit-platform-suite-engine` artifacts,
-you need _at least one_ other test engine and its dependencies on the classpath. See
-<<dependency-metadata>> for details regarding group IDs, artifact IDs, and versions.
+// In addition to the `junit-platform-suite-api` and `junit-platform-suite-engine` artifacts,
+// you need _at least one_ other test engine and its dependencies on the classpath. See
+// <<dependency-metadata>> for details regarding group IDs, artifact IDs, and versions.
+`junit-platform-suite-api` と `junit-platform-suite-engine` に加えて、_少なくとも1つ_ のテスト実行エンジンをクラスパスから参照できるようにしなければなりません。
+具体的な情報（グループIDやアーティファクトIDやバージョンなど）は <<dependency-metadata>> を参照してください。
 
 [[junit-platform-suite-engine-setup-required-dependencies]]
-===== Required Dependencies
+===== 必要な依存ライブラリ
 
-* `junit-platform-suite-api` in _test_ scope: artifact containing annotations needed to
-  configure a test suite
-* `junit-platform-suite-engine` in _test runtime_ scope: implementation of the
-  `TestEngine` API for declarative test suites
+// * `junit-platform-suite-api` in _test_ scope: artifact containing annotations needed to
+//   configure a test suite
+// * `junit-platform-suite-engine` in _test runtime_ scope: implementation of the
+//   `TestEngine` API for declarative test suites
+* `junit-platform-suite-api` _テスト_ スコープ。テストスイートを宣言するアノテーションを含んでいます。
+* `junit-platform-suite-engine` _テストランタイム_ スコープ。テストスイートを定義する `TestEngine` の実装クラスを含んでいます。
 
-NOTE: Both of the required dependencies are aggregated in the `junit-platform-suite`
-artifact which can be declard in _test_ scope instead of declaring explicit dependencies
-on `junit-platform-suite-api` and `junit-platform-suite-engine`.
+// NOTE: Both of the required dependencies are aggregated in the `junit-platform-suite`
+// artifact which can be declard in _test_ scope instead of declaring explicit dependencies
+// on `junit-platform-suite-api` and `junit-platform-suite-engine`.
+NOTE: これらの依存ライブラリを集約した `junit-platform-suite` アーティファクトを _テスト_ スコープで追加するだけでも大丈夫です。
 
 [[junit-platform-suite-engine-setup-transitive-dependencies]]
-===== Transitive Dependencies
+===== 推移的依存ライブラリ
 
-* `junit-platform-suite-commons` in _test_ scope
-* `junit-platform-launcher` in _test_ scope
-* `junit-platform-engine` in _test_ scope
-* `junit-platform-commons` in _test_ scope
-* `opentest4j` in _test_ scope
+* `junit-platform-suite-commons` _テスト_ スコープ
+* `junit-platform-launcher` _テスト_ スコープ
+* `junit-platform-engine` _テスト_ スコープ
+* `junit-platform-commons` _テスト_ スコープ
+* `opentest4j` _テスト_ スコープ
 
 [[junit-platform-suite-engine-example]]
-==== @Suite Example
+==== テストスイートを宣言するアノテーション `@Suite` の使用例
 
-By annotating a class with `@Suite` it is marked as a test suite on the JUnit Platform.
-As seen in the following example, selector and filter annotations can then be used to
-control the contents of the suite.
+// By annotating a class with `@Suite` it is marked as a test suite on the JUnit Platform.
+// As seen in the following example, selector and filter annotations can then be used to
+// control the contents of the suite.
+あるクラスを `@Suite` で修飾すると、JUnit Platform はテストスイートとして認識します。
+次のコード例では選択式（selector）とフィルターアノテーションを組み合わせてテストスイートの項目を構成しています。
 
 [source,java,indent=0]
 ----
 include::{testDir}/example/SuiteDemo.java[tags=user_guide]
 ----
 
-.Additional Configuration Options
-NOTE: There are numerous configuration options for discovering and filtering tests in a
-test suite. Please consult the Javadoc of the `{suite-api-package}` package for a full
-list of supported annotations and further details.
+// .Additional Configuration Options
+// NOTE: There are numerous configuration options for discovering and filtering tests in a
+// test suite. Please consult the Javadoc of the `{suite-api-package}` package for a full
+// list of supported annotations and further details.
+.高度な設定項目
+NOTE: テストスイートに組み込むテストを発見し、選択するための設定項目は大量に存在します。
+利用できるアノテーションと設定項目の完全な一覧は `{suite-api-package}` パッケージの Javadoc を参照してください。
