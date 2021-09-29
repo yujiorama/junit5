@@ -1,63 +1,88 @@
 [[api-evolution]]
-== API Evolution
+== API の進化
 
-One of the major goals of JUnit 5 is to improve maintainers' capabilities to evolve JUnit
-despite its being used in many projects. With JUnit 4 a lot of stuff that was originally
-added as an internal construct only got used by external extension writers and tool
-builders. That made changing JUnit 4 especially difficult and sometimes impossible.
+// One of the major goals of JUnit 5 is to improve maintainers' capabilities to evolve JUnit
+// despite its being used in many projects. With JUnit 4 a lot of stuff that was originally
+// added as an internal construct only got used by external extension writers and tool
+// builders. That made changing JUnit 4 especially difficult and sometimes impossible.
+JUnit 5 の主要な目標の1つとして、多数のプロジェクトで使われつつ継続的に JUnit を進化させるため、メンテナーにとっての利便性を向上することが挙げられます。
+JUnit 4 では、拡張機能やツールの作者が利用できる部品は、最初から用意されていた内部部品に限られていたため、とても苦労させられただけでなく、やりたいことができない場合もありました。
 
-That's why JUnit 5 introduces a defined lifecycle for all publicly available interfaces,
-classes, and methods.
+// That's why JUnit 5 introduces a defined lifecycle for all publicly available interfaces,
+// classes, and methods.
+JUnit 5 が全てのライフサイクルに関するインターフェイスやクラスやメソッドを公開しているのは、そういう理由です。
 
 [[api-evolution-version-and-status]]
-=== API Version and Status
+=== API のバージョンと状態
 
-Every published artifact has a version number `<major>.<minor>.<patch>`, and all publicly
-available interfaces, classes, and methods are annotated with {API} from the
-{API_Guardian} project. The annotation's `status` attribute can be assigned one of the
-following values.
+// Every published artifact has a version number `<major>.<minor>.<patch>`, and all publicly
+// available interfaces, classes, and methods are annotated with {API} from the
+// {API_Guardian} project. The annotation's `status` attribute can be assigned one of the
+// following values.
+公開している全てのアーティファクトのバージョン番号の形式は `<major>.<minor>.<patch>` です。
+インターフェイス、クラス、メソッド、アノテーションにも、`{API_Guardian}` の `{API}` で同じバージョン番号が指定されています。
+`status` 属性には次のような値が指定されています。
 
 [cols="20,80"]
 |===
-| Status           | Description
+// | Status           | Description
 
-| `INTERNAL`       | Must not be used by any code other than JUnit itself. Might be removed without prior notice.
-| `DEPRECATED`     | Should no longer be used; might disappear in the next minor release.
-| `EXPERIMENTAL`   | Intended for new, experimental features where we are looking for feedback. +
-                     Use this element with caution; it might be promoted to `MAINTAINED` or
-                     `STABLE` in the future, but might also be removed without prior notice, even in a patch.
-| `MAINTAINED`     | Intended for features that will not be changed in a backwards-
-                     incompatible way for *at least* the next minor release of the current
-                     major version. If scheduled for removal, it will be demoted to `DEPRECATED` first.
-| `STABLE`         | Intended for features that will not be changed in a backwards-
-                     incompatible way in the current major version (`5.*`).
+// | `INTERNAL`       | Must not be used by any code other than JUnit itself. Might be removed without prior notice.
+// | `DEPRECATED`     | Should no longer be used; might disappear in the next minor release.
+// | `EXPERIMENTAL`   | Intended for new, experimental features where we are looking for feedback. +
+//                      Use this element with caution; it might be promoted to `MAINTAINED` or
+//                      `STABLE` in the future, but might also be removed without prior notice, even in a patch.
+// | `MAINTAINED`     | Intended for features that will not be changed in a backwards-
+//                      incompatible way for *at least* the next minor release of the current
+//                      major version. If scheduled for removal, it will be demoted to `DEPRECATED` first.
+// | `STABLE`         | Intended for features that will not be changed in a backwards-
+//                      incompatible way in the current major version (`5.*`).
+| 状態             | 内容
+
+| `INTERNAL`       | 内部用。JUnit 以外で使用するべきではない要素です。予告せずに削除する場合があります。
+| `DEPRECATED`     | 廃止予定。将来のマイナーアップデートで削除する可能性があるため、使用しないほうがいい要素です。
+| `EXPERIMENTAL`   | 実験的。JUnit チームとしてフィードバックを募集している新しい実験的な機能に関連する要素です。
+                     注意して使用してください。
+                     将来的に `MAINTAINED` や `STABLE` へ変更になる可能性があります。
+                     将来のパッチアップデートで予告せずにで削除する可能性があります。
+| `MAINTAINED`     | 保守。後方互換性を保つため、*少なくとも* 次のマイナーアップデート（同じメジャーバージョン）では変更しない要素です。
+                     将来的に削除する場合は、まず状態を `DEPRECATED` へ変更します。
+| `STABLE`         | 安定。後方互換性を保つため、同じメジャーバージョンの間は変更しない要素です。
 |===
 
-If the `@API` annotation is present on a type, it is considered to be applicable for all
-public members of that type as well. A member is allowed to declare a different `status`
-value of lower stability.
+// If the `@API` annotation is present on a type, it is considered to be applicable for all
+// public members of that type as well. A member is allowed to declare a different `status`
+// value of lower stability.
+インターフェイスやクラスが `@API` で修飾されているなら、可視性が `public` のメンバーについても同じ意味になります。
+インターフェイスやクラスのメンバーには、インターフェイスやクラスより安定性の低い `status` を指定する場合があります。
 
 [[api-evolution-experimental-apis]]
-=== Experimental APIs
+=== 実験的な API
 
-The following table lists which APIs are currently designated as _experimental_ via
-`@API(status = EXPERIMENTAL)`. Caution should be taken when relying on such APIs.
+// The following table lists which APIs are currently designated as _experimental_ via
+// `@API(status = EXPERIMENTAL)`. Caution should be taken when relying on such APIs.
+次の表は現在のバージョンで _実験的_ `@API(status = EXPERIMENTAL)` になっている要素です。
+注意して使用してください。
 
 include::{experimentalApisTableFile}[]
 
 [[api-evolution-deprecated-apis]]
-=== Deprecated APIs
+=== 廃止予定の API
 
-The following table lists which APIs are currently designated as _deprecated_ via
-`@API(status = DEPRECATED)`. You should avoid using deprecated APIs whenever possible,
-since such APIs will likely be removed in an upcoming release.
+// The following table lists which APIs are currently designated as _deprecated_ via
+// `@API(status = DEPRECATED)`. You should avoid using deprecated APIs whenever possible,
+// since such APIs will likely be removed in an upcoming release.
+次の表は現在のバージョンで _廃止予定_ `@API(status = DEPRECATED)` になっている要素です。
+次のリリースで削除される可能性があるため、できるだけ使用しないでください。
 
 include::{deprecatedApisTableFile}[]
 
 [[api-evolution-tooling]]
-=== @API Tooling Support
+=== ツール側の `@API` 対応
 
-The {API_Guardian} project plans to provide tooling support for publishers and consumers
-of APIs annotated with {API}. For example, the tooling support will likely provide a
-means to check if JUnit APIs are being used in accordance with `@API` annotation
-declarations.
+// The {API_Guardian} project plans to provide tooling support for publishers and consumers
+// of APIs annotated with {API}. For example, the tooling support will likely provide a
+// means to check if JUnit APIs are being used in accordance with `@API` annotation
+// declarations.
+`{API_Guardian}` プロジェクトでは、`{API}` で修飾した要素の供給者と消費者をツールから使用するための機能を提供する予定です。
+例えば、ツールの使用している JUnit API の `@API` をチェックできるようになるかもしれません。
