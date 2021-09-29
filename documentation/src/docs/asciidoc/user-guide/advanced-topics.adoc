@@ -1,5 +1,5 @@
 [[advanced-topics]]
-== Advanced Topics
+== 高度な使い方
 
 include::launcher-api.adoc[]
 
