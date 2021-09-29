@@ -1,25 +1,31 @@
 [[appendix]]
-== Appendix
+== 付録
 
 [[reproducible-builds]]
-=== Reproducible Builds
+=== 再現性のあるビルド
 
-Starting with version 5.7, JUnit 5 aims for its non-javadoc JARs to be
-https://reproducible-builds.org/[reproducible].
+// Starting with version 5.7, JUnit 5 aims for its non-javadoc JARs to be
+// https://reproducible-builds.org/[reproducible].
+JUnit 5.7 から、Javadoc を含まない jar ファイルを https://reproducible-builds.org/[再現性のあるビルド] として作成するようになりました。
 
-Under identical build conditions, such as Java version, repeated builds should provide the
-same output byte-for-byte.
+// Under identical build conditions, such as Java version, repeated builds should provide the
+// same output byte-for-byte.
+ビルド時の条件（Java のバージョンなど）が同じなら、何回ビルドをしてもバイト単位で同じ結果を生成するということです。
 
-This means that anyone can reproduce the build conditions of the artifacts on Maven
-Central/Sonatype and produce the same output artifact locally, confirming that the
-artifacts in the repositories were actually generated from this source code.
+// This means that anyone can reproduce the build conditions of the artifacts on Maven
+// Central/Sonatype and produce the same output artifact locally, confirming that the
+// artifacts in the repositories were actually generated from this source code.
+Maven Central や Sonartype に公開しているアーティファクトと同じビルド時の条件を用意できるなら、誰でも自分の環境で完全に同じアーティファクトをビルドできるのです。
+Maven リポジトリのアーティファクトがソースコードからビルドした内容であることを確認できます。
 
 [[dependency-metadata]]
-=== Dependency Metadata
+=== 依存ライブラリに関するメタデータ
 
-Artifacts for final releases and milestones are deployed to {Maven_Central}, and snapshot
-artifacts are deployed to Sonatype's {snapshot-repo}[snapshots repository] under
-{snapshot-repo}/org/junit/[/org/junit].
+// Artifacts for final releases and milestones are deployed to {Maven_Central}, and snapshot
+// artifacts are deployed to Sonatype's {snapshot-repo}[snapshots repository] under
+// {snapshot-repo}/org/junit/[/org/junit].
+最終的なリリースやマイルストーンに対応するアーティファクトは {Maven_Central} へデプロイします。
+スナップショットのアーティファクトは SonarType の {snapshot-repo}[スナップショットリポジトリ] の {snapshot-repo}/org/junit/[/org/junit] へデプロイします。
 
 [[dependency-metadata-junit-platform]]
 ==== JUnit Platform
@@ -102,12 +108,15 @@ artifacts are deployed to Sonatype's {snapshot-repo}[snapshots repository] under
     APIs or tests written using testing frameworks built on those APIs.
 
 [[dependency-metadata-junit-bom]]
-==== Bill of Materials (BOM)
+==== 部品表（BOM：Bill of Materials）
 
-The _Bill of Materials_ POM provided under the following Maven coordinates can be used to
-ease dependency management when referencing multiple of the above artifacts using
-https://maven.apache.org/guides/introduction/introduction-to-dependency-mechanism.html#Importing_Dependencies[Maven]
-or https://docs.gradle.org/current/userguide/managing_transitive_dependencies.html#sec:bom_import[Gradle].
+// The _Bill of Materials_ POM provided under the following Maven coordinates can be used to
+// ease dependency management when referencing multiple of the above artifacts using
+// https://maven.apache.org/guides/introduction/introduction-to-dependency-mechanism.html#Importing_Dependencies[Maven]
+// or https://docs.gradle.org/current/userguide/managing_transitive_dependencies.html#sec:bom_import[Gradle].
+https://maven.apache.org/guides/introduction/introduction-to-dependency-mechanism.html#Importing_Dependencies[Maven] や
+https://docs.gradle.org/current/userguide/managing_transitive_dependencies.html#sec:bom_import[Gradle] で
+複数のアーティファクトを依存ライブラリとして簡単に管理できるよう、Maven BOM を公開しています。
 
 * *Group ID*: `org.junit`
 * *Artifact ID*: `junit-bom`
@@ -116,15 +125,17 @@ or https://docs.gradle.org/current/userguide/managing_transitive_dependencies.ht
 [[dependency-metadata-dependencies]]
 ==== Dependencies
 
-Most of the above artifacts have a dependency in their published Maven POMs on the
-following _@API Guardian_ JAR.
+// Most of the above artifacts have a dependency in their published Maven POMs on the
+// following _@API Guardian_ JAR.
+ほとんどのアーティファクトは公開している Maven POM の依存関係として {API_Gurdian} のライブラリを記述しています。
 
 * *Group ID*: `org.apiguardian`
 * *Artifact ID*: `apiguardian-api`
 * *Version*: `{apiguardian-version}`
 
-In addition, most of the above artifacts have a direct or transitive dependency on the
-following _OpenTest4J_ JAR.
+// In addition, most of the above artifacts have a direct or transitive dependency on the
+// following _OpenTest4J_ JAR.
+また、ほとんどのアーティファクトは直接的に、あるいは、推移的に、_OpenTest4J_ のライブラリへ依存しています。
 
 * *Group ID*: `org.opentest4j`
 * *Artifact ID*: `opentest4j`
